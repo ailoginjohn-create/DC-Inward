@@ -1,0 +1,141 @@
+<Window x:Class="InwardDC.App.Views.DispatchEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Dispatch Challan"
+        Width="1120" Height="720"
+        WindowStartupLocation="CenterOwner">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Background="White" Padding="12,8"
+                BorderBrush="#D5E0EC" BorderThickness="0,0,0,1">
+            <DockPanel>
+                <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="Bold" Foreground="#1F4E78"
+                           DockPanel.Dock="Left" VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource ToolbarButton}" />
+                    <Button Content="Save Challan" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border DockPanel.Dock="Bottom" Background="#EEF3F9" Padding="8">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding ErrorMessage}" VerticalAlignment="Center" Foreground="#B00020" Margin="12,0,0,0" />
+            </StackPanel>
+        </Border>
+
+        <Grid Margin="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                    <TextBlock Text="DC No" />
+                    <TextBox Text="{Binding DcNo, Mode=OneWay}" IsReadOnly="True" Background="#EEF0F4" />
+                    <TextBlock Text="Reference Challan No" Margin="0,6,0,0" />
+                    <TextBox Text="{Binding ReferenceChallanNo}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                    <TextBlock Text="DC Date" />
+                    <DatePicker SelectedDate="{Binding DcDate}" />
+                    <TextBlock Text="Transport Details" Margin="0,6,0,0" />
+                    <TextBox Text="{Binding TransportDetails}" Height="60" AcceptsReturn="True" TextWrapping="Wrap" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                    <TextBlock Text="Customer" />
+                    <ComboBox ItemsSource="{Binding Customers}" SelectedItem="{Binding Customer}"
+                              DisplayMemberPath="Name" />
+                    <TextBlock Text="Remarks" Margin="0,6,0,0" />
+                    <TextBox Text="{Binding Remarks}" Height="60" AcceptsReturn="True" TextWrapping="Wrap" />
+                </StackPanel>
+                <StackPanel Grid.Column="3">
+                    <TextBlock Text="Total Amount" FontWeight="Bold" />
+                    <TextBlock Text="{Binding TotalAmount, StringFormat=N2}" FontSize="24" FontWeight="Bold"
+                               Foreground="#1F4E78" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Stock picker -->
+            <Border Grid.Row="1" Margin="0,12,0,6" Background="White" BorderBrush="#D5E0EC" BorderThickness="1" Padding="8">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,6">
+                        <TextBlock Text="Available Stock" FontWeight="Bold" FontSize="14" VerticalAlignment="Center" />
+                        <TextBox Width="200" Text="{Binding StockSearch, UpdateSourceTrigger=PropertyChanged}" Margin="12,0,0,0" />
+                        <Button Content="Refresh" Command="{Binding RefreshStockCommand}" Style="{StaticResource ToolbarButton}" />
+                        <TextBlock Text="Qty:" VerticalAlignment="Center" Margin="20,0,4,0" />
+                        <TextBox Width="70" Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Content="+ Add to Challan" Command="{Binding AddLineCommand}" Style="{StaticResource PrimaryButton}" Margin="16,0,0,0" />
+                    </StackPanel>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="200" />
+                        </Grid.ColumnDefinitions>
+                        <DataGrid Grid.Column="0" ItemsSource="{Binding Stock}"
+                                  SelectedItem="{Binding SelectedStock}"
+                                  AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                                  SelectionMode="Single" HeadersVisibility="Column">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Item" Binding="{Binding ItemName}" Width="*" />
+                                <DataGridTextColumn Header="Make" Binding="{Binding Make}" Width="80" />
+                                <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="80" />
+                                <DataGridTextColumn Header="Inward" Binding="{Binding InwardNo}" Width="90" />
+                                <DataGridTextColumn Header="Available" Binding="{Binding AvailableQuantity}" Width="70" />
+                                <DataGridTextColumn Header="Rate" Binding="{Binding Rate, StringFormat=N2}" Width="80" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Border Grid.Column="1" Margin="8,0,0,0" Background="#EEF3F9" Padding="6">
+                            <ScrollViewer>
+                                <StackPanel>
+                                    <TextBlock Text="Select serials" FontWeight="Bold" />
+                                    <ItemsControl ItemsSource="{Binding SerialOptions}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <CheckBox Content="{Binding SerialNo}" IsChecked="{Binding IsSelected}" Margin="0,2" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </DockPanel>
+            </Border>
+
+            <!-- Lines -->
+            <DataGrid Grid.Row="2" ItemsSource="{Binding Lines}"
+                      AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                      HeadersVisibility="Column" RowHeight="30">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Item" Binding="{Binding ItemName}" Width="*" />
+                    <DataGridTextColumn Header="Make" Binding="{Binding ItemMake}" Width="80" />
+                    <DataGridTextColumn Header="Model" Binding="{Binding ItemModel}" Width="80" />
+                    <DataGridTextColumn Header="Inward" Binding="{Binding InwardNo}" Width="90" />
+                    <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="60" />
+                    <DataGridTextColumn Header="Rate" Binding="{Binding Rate, StringFormat=N2}" Width="80" />
+                    <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=N2}" Width="90" />
+                    <DataGridTextColumn Header="Serials" Binding="{Binding SerialDisplay}" Width="160" />
+                    <DataGridTemplateColumn Header="" Width="60">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Remove" Command="{Binding DataContext.RemoveLineCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </DockPanel>
+</Window>

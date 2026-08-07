@@ -1,0 +1,75 @@
+<UserControl x:Class="InwardDC.App.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel Margin="12">
+        <Border DockPanel.Dock="Top" Background="White" BorderBrush="#D5E0EC" BorderThickness="1" Padding="10" Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Save Settings" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}" />
+                <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Margin="16,0,0,0" />
+                <TextBlock Text="{Binding ErrorMessage}" VerticalAlignment="Center" Foreground="#B00020" Margin="12,0,0,0" />
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                    <TextBlock Text="Company" FontWeight="Bold" FontSize="14" Foreground="#1F4E78" />
+                    <TextBlock Text="Company Name" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding CompanyName}" />
+                    <TextBlock Text="Address Line 1" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding CompanyAddressLine1}" />
+                    <TextBlock Text="Address Line 2" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding CompanyAddressLine2}" />
+                    <TextBlock Text="City" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding CompanyCity}" />
+                    <TextBlock Text="State" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding CompanyState}" />
+                    <TextBlock Text="Pincode" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding CompanyPincode}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="12,0">
+                    <TextBlock Text="Contact" FontWeight="Bold" FontSize="14" Foreground="#1F4E78" />
+                    <TextBlock Text="Phone" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding CompanyPhone}" />
+                    <TextBlock Text="Email" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding CompanyEmail}" />
+                    <TextBlock Text="GSTIN" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding CompanyGstin}" />
+                    <TextBlock Text="PAN" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding CompanyPan}" />
+                    <TextBlock Text="Logo" Margin="0,8,0,0" />
+                    <DockPanel>
+                        <Button Content="Browse..." Command="{Binding PickLogoCommand}" DockPanel.Dock="Right" Style="{StaticResource ToolbarButton}" />
+                        <TextBox Text="{Binding CompanyLogoPath}" IsReadOnly="True" />
+                    </DockPanel>
+                    <TextBlock Text="Footer Note" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding FooterNote}" Height="60" AcceptsReturn="True" TextWrapping="Wrap" />
+                    <CheckBox Content="Require serial for serial-tracked items" IsChecked="{Binding RequireSerialForTrackedItems}" Margin="0,12,0,0" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                    <TextBlock Text="Numbering Prefixes" FontWeight="Bold" FontSize="14" Foreground="#1F4E78" />
+                    <TextBlock Text="Inward" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding InwardNumberPrefix}" />
+                    <TextBlock Text="Dispatch Challan" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding DcNumberPrefix}" />
+                    <TextBlock Text="Customer" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding CustomerNumberPrefix}" />
+                    <TextBlock Text="Vendor" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding VendorNumberPrefix}" />
+                    <TextBlock Text="Item" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding ItemNumberPrefix}" />
+                    <TextBlock Text="Category" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding CategoryNumberPrefix}" />
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

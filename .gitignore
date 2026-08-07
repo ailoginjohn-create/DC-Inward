@@ -1,0 +1,13 @@
+# Build output
+**/bin/
+**/obj/
+publish/
+installer/output/
+
+# IDE
+.vs/
+.idea/
+*.user
+
+# Logs / runtime data
+*.log

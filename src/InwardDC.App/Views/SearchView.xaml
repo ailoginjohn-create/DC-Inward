@@ -1,0 +1,106 @@
+<UserControl x:Class="InwardDC.App.Views.SearchView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16">
+            <DockPanel Margin="0,0,0,14">
+                <TextBlock Text="Global Search" FontSize="16" FontWeight="Bold" Foreground="#1F4E78" DockPanel.Dock="Left" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBox Width="280" Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Content="Search" Command="{Binding SearchCommand}" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" />
+                </StackPanel>
+            </DockPanel>
+
+            <TextBlock Text="{Binding StatusMessage}" Margin="0,0,0,8" />
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#B00020" Margin="0,0,0,8" />
+
+            <UniformGrid Columns="2" Visibility="{Binding HasResults, Converter={StaticResource BoolVisibilityConverter}}">
+                <Border Style="{StaticResource StatCard}">
+                    <StackPanel>
+                        <TextBlock Text="Customers" FontWeight="Bold" Foreground="#1F4E78" Margin="0,0,0,6" />
+                        <DataGrid ItemsSource="{Binding Customers}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Height="180">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Code" Binding="{Binding Subtitle}" Width="90" />
+                                <DataGridTextColumn Header="Name" Binding="{Binding Title}" Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource StatCard}">
+                    <StackPanel>
+                        <TextBlock Text="Items" FontWeight="Bold" Foreground="#1F4E78" Margin="0,0,0,6" />
+                        <DataGrid ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Height="180">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Code" Binding="{Binding Subtitle}" Width="90" />
+                                <DataGridTextColumn Header="Name" Binding="{Binding Title}" Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource StatCard}">
+                    <StackPanel>
+                        <TextBlock Text="Inwards" FontWeight="Bold" Foreground="#1F4E78" Margin="0,0,0,6" />
+                        <DataGrid ItemsSource="{Binding Inwards}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Height="180">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="No" Binding="{Binding ReferenceNumber}" Width="110" />
+                                <DataGridTextColumn Header="Party" Binding="{Binding Subtitle}" Width="*" />
+                                <DataGridTextColumn Header="Amount" Binding="{Binding Status}" Width="70" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource StatCard}">
+                    <StackPanel>
+                        <TextBlock Text="Dispatch Challans" FontWeight="Bold" Foreground="#1F4E78" Margin="0,0,0,6" />
+                        <DataGrid ItemsSource="{Binding Dispatches}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Height="180">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="No" Binding="{Binding ReferenceNumber}" Width="110" />
+                                <DataGridTextColumn Header="Party" Binding="{Binding Subtitle}" Width="*" />
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="70" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <DockPanel Margin="0,18,0,8">
+                <TextBlock Text="Serial Lookup" FontSize="16" FontWeight="Bold" Foreground="#1F4E78" DockPanel.Dock="Left" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBox Width="200" Text="{Binding SerialNo, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Content="Lookup" Command="{Binding SerialLookupCommand}" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" />
+                </StackPanel>
+            </DockPanel>
+
+            <Border Style="{StaticResource StatCard}" Margin="0,0,0,10">
+                <StackPanel>
+                    <TextBlock Text="Current Stock Position" FontWeight="Bold" Foreground="#1F4E78" Margin="0,0,0,6" />
+                    <DataGrid ItemsSource="{Binding SerialLookup}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Height="160">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Item" Binding="{Binding ItemName}" Width="*" />
+                            <DataGridTextColumn Header="Serial" Binding="{Binding SerialNo}" Width="120" />
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" />
+                            <DataGridTextColumn Header="Inward" Binding="{Binding InwardNo}" Width="110" />
+                            <DataGridTextColumn Header="DC" Binding="{Binding DcNo}" Width="110" />
+                            <DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource StatCard}">
+                <StackPanel>
+                    <TextBlock Text="Serial History" FontWeight="Bold" Foreground="#1F4E78" Margin="0,0,0,6" />
+                    <DataGrid ItemsSource="{Binding History}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Height="200">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="When" Binding="{Binding EventedOn, StringFormat=g}" Width="130" />
+                            <DataGridTextColumn Header="Event" Binding="{Binding EventType}" Width="120" />
+                            <DataGridTextColumn Header="Reference" Binding="{Binding ReferenceNumber}" Width="120" />
+                            <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="*" />
+                            <DataGridTextColumn Header="User" Binding="{Binding UserName}" Width="120" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
