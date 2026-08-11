@@ -67,6 +67,8 @@ public class ExcelService : IExcelService
 
             ws.SheetView.FreezeRows(1);
             ws.Columns().AdjustToContents();
+
+            wb.SaveAs(stream);
         }
         stream.Position = 0;
         return Task.FromResult<Stream>(stream);

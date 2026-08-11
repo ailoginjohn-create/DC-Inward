@@ -134,6 +134,25 @@ public class ExcelImportTests
     }
 
     [Fact]
+    public async Task CreateImportTemplateAsync_ProducesOpenableWorkbookWithHeaders()
+    {
+        var app = new TestApp();
+        using (app)
+        {
+            var service = CreateService(app);
+            using var stream = await service.CreateImportTemplateAsync();
+
+            Assert.True(stream.Length > 0, "Template stream must not be empty.");
+
+            using var wb = new XLWorkbook(stream);
+            var ws = wb.Worksheets.First();
+            Assert.Equal("InwardItems", ws.Name);
+            Assert.Equal("Inward Date (dd/MM/yyyy)", ws.Cell(1, 1).GetString());
+            Assert.Equal("Remarks", ws.Cell(1, 17).GetString());
+        }
+    }
+
+    [Fact]
     public async Task ImportInwardAsync_RequiresVendorForPurchase()
     {
         var (app, _) = await SeedMastersAsync();
