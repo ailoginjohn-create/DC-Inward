@@ -41,6 +41,7 @@ public partial class App : System.Windows.Application
 
         services.AddSingleton<ICurrentUserService, CurrentUserService>();
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IUpdateService, UpdateService>();
 
         RegisterViewModels(services);
         RegisterWindows(services);

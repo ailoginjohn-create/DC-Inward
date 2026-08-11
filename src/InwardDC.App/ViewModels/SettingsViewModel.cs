@@ -11,12 +11,15 @@ public partial class SettingsViewModel : ViewModelBase
 {
     private readonly ISettingsService _settings;
     private readonly IDialogService _dialogs;
+    private readonly IUpdateService _updates;
+    private UpdateInfo? _pendingUpdate;
 
     public SettingsViewModel(ICurrentUserService currentUser, ISettingsService settings,
-        IDialogService dialogs) : base(currentUser)
+        IDialogService dialogs, IUpdateService updates) : base(currentUser)
     {
         _settings = settings;
         _dialogs = dialogs;
+        _updates = updates;
         Title = "Company Settings";
     }
 
@@ -39,9 +42,16 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private string _categoryNumberPrefix = "CAT";
     [ObservableProperty] private string _footerNote = string.Empty;
     [ObservableProperty] private bool _requireSerialForTrackedItems = true;
+    [ObservableProperty] private string _currentAppVersion = string.Empty;
+    [ObservableProperty] private string _updateStatus = string.Empty;
+    [ObservableProperty] private string _updateNotes = string.Empty;
+    [ObservableProperty] private bool _updateAvailable;
 
     public override Task OnNavigatedAsync(CancellationToken ct = default)
-        => RunAsync(LoadAsync, "Loading settings...", ct);
+    {
+        CurrentAppVersion = _updates.CurrentVersion;
+        return RunAsync(LoadAsync, "Loading settings...", ct);
+    }
 
     private async Task LoadAsync()
     {
@@ -65,6 +75,55 @@ public partial class SettingsViewModel : ViewModelBase
         CategoryNumberPrefix = s.CategoryNumberPrefix;
         FooterNote = s.FooterNote;
         RequireSerialForTrackedItems = s.RequireSerialForTrackedItems;
+    }
+
+    [RelayCommand]
+    private async Task CheckForUpdatesAsync()
+    {
+        UpdateStatus = "Checking for updates...";
+        UpdateNotes = string.Empty;
+        UpdateAvailable = false;
+        _pendingUpdate = null;
+
+        await RunAsync(async () =>
+        {
+            var info = await _updates.CheckForUpdateAsync();
+            if (info is null)
+            {
+                UpdateStatus = $"You are up to date (version {_updates.CurrentVersion}).";
+                return;
+            }
+
+            _pendingUpdate = info;
+            UpdateAvailable = true;
+            UpdateStatus = $"Version {info.Version} is available. Current: {_updates.CurrentVersion}.";
+            UpdateNotes = info.Notes ?? string.Empty;
+        }, "Checking for updates...");
+    }
+
+    [RelayCommand]
+    private async Task DownloadAndInstallAsync()
+    {
+        if (_pendingUpdate is null)
+        {
+            _dialogs.ShowInfo("No update is pending. Click 'Check for Updates' first.");
+            return;
+        }
+
+        if (!_dialogs.Confirm(
+                $"Download version {_pendingUpdate.Version} now?\n\nThe app will close and reopen automatically after downloading.",
+                "Install Update"))
+            return;
+
+        await RunAsync(async () =>
+        {
+            UpdateStatus = "Downloading update...";
+            var path = await _updates.DownloadUpdateAsync(_pendingUpdate);
+            if (_updates.ApplyUpdate(path))
+                System.Windows.Application.Current.Shutdown();
+            else
+                _dialogs.ShowError("The update was downloaded but could not be applied automatically. Please download it again manually.");
+        }, "Downloading update...");
     }
 
     [RelayCommand]

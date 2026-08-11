@@ -43,6 +43,18 @@ See `scripts/publish.ps1` (recommended, run on Windows) or `scripts/publish.sh`
 The `installer/installer.iss` Inno Setup script packages the published files into a
 setup executable. See `installer/README.md` for build steps.
 
+## Updates
+
+The app self-updates from GitHub Releases:
+
+- `latest.json` (repository root) is the version manifest the app checks at startup and
+  from **Company Settings > Updates > Check for Updates**.
+- A new version is shipped by bumping `<Version>` in `src/InwardDC.App/InwardDC.App.csproj`,
+  uploading the single-file `InwardDC.exe` to a GitHub Release (tag `v<version>`), and
+  updating `version` / `url` / `notes` in `latest.json`.
+- When a newer version is found the app offers to download and install it, then replaces
+  its own exe and restarts. The user never touches PowerShell.
+
 ## First run
 
 - The database is created and migrated automatically on first launch.
