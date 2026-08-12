@@ -30,6 +30,8 @@ public class InwardDto
     public string CustomerName { get; set; } = string.Empty;
     public Guid? VendorId { get; set; }
     public string VendorName { get; set; } = string.Empty;
+    public Guid? PurposeId { get; set; }
+    public string PurposeName { get; set; } = string.Empty;
     public string ReferenceInvoiceNo { get; set; } = string.Empty;
     public DateTime? ReferenceInvoiceDate { get; set; }
     public string ChallanNo { get; set; } = string.Empty;
@@ -68,6 +70,7 @@ public class InwardSaveRequest
     public InwardType InwardType { get; set; } = InwardType.CustomerReturn;
     public Guid? CustomerId { get; set; }
     public Guid? VendorId { get; set; }
+    public Guid? PurposeId { get; set; }
     public string ReferenceInvoiceNo { get; set; } = string.Empty;
     public DateTime? ReferenceInvoiceDate { get; set; }
     public string ChallanNo { get; set; } = string.Empty;

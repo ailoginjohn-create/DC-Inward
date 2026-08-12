@@ -28,6 +28,7 @@ public class SeedService
         await SeedAdminUserAsync(ct);
         await SeedDefaultSettingsAsync(ct);
         await SeedDefaultCategoriesAsync(ct);
+        await SeedDefaultPurposesAsync(ct);
         await _uow.SaveChangesAsync(ct);
     }
 
@@ -120,5 +121,30 @@ public class SeedService
             Description = "Spare parts and components",
             IsActive = true
         }, ct);
+    }
+
+    private async Task SeedDefaultPurposesAsync(CancellationToken ct)
+    {
+        if (await _uow.Purposes.GetByNameAsync("Evaluation", ct) is not null)
+            return;
+
+        var defaults = new[]
+        {
+            ("Evaluation", "For evaluation / trial use"),
+            ("Testing", "For testing and calibration"),
+            ("Demo", "For demonstration to customers"),
+            ("Service", "For repair and service work"),
+            ("Other", "Other purpose")
+        };
+
+        foreach (var (name, description) in defaults)
+        {
+            await _uow.Purposes.AddAsync(new Purpose
+            {
+                Name = name,
+                Description = description,
+                IsActive = true
+            }, ct);
+        }
     }
 }

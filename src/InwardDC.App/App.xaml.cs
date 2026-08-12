@@ -67,6 +67,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<VendorsViewModel>();
         services.AddSingleton<ItemsViewModel>();
         services.AddSingleton<ItemCategoriesViewModel>();
+        services.AddSingleton<PurposesViewModel>();
         services.AddSingleton<UsersViewModel>();
         services.AddTransient<InwardEditorViewModel>();
         services.AddTransient<DispatchEditorViewModel>();
@@ -74,6 +75,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<VendorEditorViewModel>();
         services.AddTransient<ItemEditorViewModel>();
         services.AddTransient<ItemCategoryEditorViewModel>();
+        services.AddTransient<PurposeEditorViewModel>();
         services.AddTransient<UserEditorViewModel>();
         services.AddSingleton<SearchViewModel>();
         services.AddSingleton<ReportsViewModel>();
@@ -92,6 +94,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<VendorEditorWindow>();
         services.AddTransient<ItemEditorWindow>();
         services.AddTransient<ItemCategoryEditorWindow>();
+        services.AddTransient<PurposeEditorWindow>();
         services.AddTransient<UserEditorWindow>();
     }
 

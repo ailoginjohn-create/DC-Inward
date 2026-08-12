@@ -46,6 +46,11 @@ public class TransactionConfigurations :
             .HasForeignKey(x => x.VendorId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(x => x.Purpose)
+            .WithMany()
+            .HasForeignKey(x => x.PurposeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasMany(x => x.Items)
             .WithOne(x => x.InwardEntry)
             .HasForeignKey(x => x.InwardEntryId)
@@ -103,6 +108,11 @@ public class TransactionConfigurations :
         builder.HasOne(x => x.SourceInwardEntry)
             .WithMany()
             .HasForeignKey(x => x.SourceInwardEntryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.Purpose)
+            .WithMany()
+            .HasForeignKey(x => x.PurposeId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(x => x.Items)

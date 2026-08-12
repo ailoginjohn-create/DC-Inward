@@ -35,18 +35,21 @@ public partial class InwardEditorViewModel : ViewModelBase
     private readonly ICustomerService _customers;
     private readonly IVendorService _vendors;
     private readonly IItemService _items;
+    private readonly IPurposeService _purposes;
 
     private readonly Dictionary<Guid, ItemDto> _itemLookup = new();
 
     private Guid? _id;
 
     public InwardEditorViewModel(ICurrentUserService currentUser, IInwardService inward,
-        ICustomerService customers, IVendorService vendors, IItemService items) : base(currentUser)
+        ICustomerService customers, IVendorService vendors, IItemService items,
+        IPurposeService purposes) : base(currentUser)
     {
         _inward = inward;
         _customers = customers;
         _vendors = vendors;
         _items = items;
+        _purposes = purposes;
         Title = "Inward Entry";
         Lines = new ObservableCollection<InwardLineRow>();
     }
@@ -55,6 +58,7 @@ public partial class InwardEditorViewModel : ViewModelBase
 
     public ObservableCollection<DropdownItemDto> Customers { get; } = new();
     public ObservableCollection<DropdownItemDto> Vendors { get; } = new();
+    public ObservableCollection<DropdownItemDto> Purposes { get; } = new();
     public ObservableCollection<ItemDto> MasterItems { get; } = new();
     public ObservableCollection<InwardLineRow> Lines { get; }
 
@@ -66,6 +70,7 @@ public partial class InwardEditorViewModel : ViewModelBase
     [ObservableProperty] private InwardType _inwardType = InwardType.CustomerReturn;
     [ObservableProperty] private DropdownItemDto? _customer;
     [ObservableProperty] private DropdownItemDto? _vendor;
+    [ObservableProperty] private DropdownItemDto? _purpose;
     [ObservableProperty] private string _referenceInvoiceNo = string.Empty;
     [ObservableProperty] private DateTime? _referenceInvoiceDate;
     [ObservableProperty] private string _challanNo = string.Empty;
@@ -95,6 +100,7 @@ public partial class InwardEditorViewModel : ViewModelBase
                 InwardType = dto.InwardType;
                 Customer = Customers.FirstOrDefault(c => c.Id == dto.CustomerId);
                 Vendor = Vendors.FirstOrDefault(v => v.Id == dto.VendorId);
+                Purpose = Purposes.FirstOrDefault(p => p.Id == dto.PurposeId);
                 ReferenceInvoiceNo = dto.ReferenceInvoiceNo;
                 ReferenceInvoiceDate = dto.ReferenceInvoiceDate;
                 ChallanNo = dto.ChallanNo;
@@ -141,6 +147,10 @@ public partial class InwardEditorViewModel : ViewModelBase
         Vendors.Clear();
         foreach (var v in await _vendors.GetDropdownAsync())
             Vendors.Add(v);
+
+        Purposes.Clear();
+        foreach (var p in await _purposes.GetDropdownAsync())
+            Purposes.Add(p);
 
         MasterItems.Clear();
         var page = await _items.GetPagedAsync(new Domain.Criteria.ItemSearchFilter { PageSize = 10000, IsActive = true });
@@ -198,6 +208,7 @@ public partial class InwardEditorViewModel : ViewModelBase
                 InwardType = InwardType,
                 CustomerId = Customer?.Id,
                 VendorId = Vendor?.Id,
+                PurposeId = Purpose?.Id,
                 ReferenceInvoiceNo = ReferenceInvoiceNo,
                 ReferenceInvoiceDate = ReferenceInvoiceDate,
                 ChallanNo = ChallanNo,

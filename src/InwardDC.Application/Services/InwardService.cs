@@ -69,6 +69,7 @@ public class InwardService : IInwardService
             InwardType = request.InwardType,
             CustomerId = request.CustomerId,
             VendorId = request.VendorId,
+            PurposeId = request.PurposeId,
             ReferenceInvoiceNo = request.ReferenceInvoiceNo.Trim(),
             ReferenceInvoiceDate = request.ReferenceInvoiceDate,
             ChallanNo = request.ChallanNo.Trim(),
@@ -113,6 +114,7 @@ public class InwardService : IInwardService
         entry.InwardType = request.InwardType;
         entry.CustomerId = request.CustomerId;
         entry.VendorId = request.VendorId;
+        entry.PurposeId = request.PurposeId;
         entry.ReferenceInvoiceNo = request.ReferenceInvoiceNo.Trim();
         entry.ReferenceInvoiceDate = request.ReferenceInvoiceDate;
         entry.ChallanNo = request.ChallanNo.Trim();
@@ -341,6 +343,8 @@ public class InwardService : IInwardService
             CustomerName = x.Customer?.Name ?? string.Empty,
             VendorId = x.VendorId,
             VendorName = x.Vendor?.Name ?? string.Empty,
+            PurposeId = x.PurposeId,
+            PurposeName = x.Purpose?.Name ?? string.Empty,
             ReferenceInvoiceNo = x.ReferenceInvoiceNo,
             ReferenceInvoiceDate = x.ReferenceInvoiceDate,
             ChallanNo = x.ChallanNo,

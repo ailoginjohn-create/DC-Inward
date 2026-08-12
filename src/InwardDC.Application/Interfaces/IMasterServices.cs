@@ -33,6 +33,15 @@ public interface IItemCategoryService
     Task<string> GenerateCodeAsync(CancellationToken ct = default);
 }
 
+public interface IPurposeService
+{
+    Task<PagedResponse<PurposeDto>> GetPagedAsync(PurposeSearchFilter filter, CancellationToken ct = default);
+    Task<PurposeDto?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<IReadOnlyList<DropdownItemDto>> GetDropdownAsync(CancellationToken ct = default);
+    Task<OperationResult> SaveAsync(PurposeSaveRequest request, CancellationToken ct = default);
+    Task<OperationResult> DeleteAsync(Guid id, CancellationToken ct = default);
+}
+
 public interface IItemService
 {
     Task<PagedResponse<ItemDto>> GetPagedAsync(ItemSearchFilter filter, CancellationToken ct = default);

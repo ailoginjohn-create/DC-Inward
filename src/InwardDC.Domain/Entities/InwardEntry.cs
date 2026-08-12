@@ -15,6 +15,8 @@ public class InwardEntry : EntityBase
     public Customer? Customer { get; set; }
     public Guid? VendorId { get; set; }
     public Vendor? Vendor { get; set; }
+    public Guid? PurposeId { get; set; }
+    public Purpose? Purpose { get; set; }
     public string ReferenceInvoiceNo { get; set; } = string.Empty;
     public DateTime? ReferenceInvoiceDate { get; set; }
     public string ChallanNo { get; set; } = string.Empty;

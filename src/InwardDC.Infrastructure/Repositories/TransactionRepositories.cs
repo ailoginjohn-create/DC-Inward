@@ -19,6 +19,7 @@ public class InwardRepository : IInwardRepository
         => _db.InwardEntries.AsNoTracking()
             .Include(x => x.Customer)
             .Include(x => x.Vendor)
+            .Include(x => x.Purpose)
             .Include(x => x.Items).ThenInclude(x => x.Item)
             .Include(x => x.Items).ThenInclude(x => x.Serials)
             .Include(x => x.Attachments)
@@ -32,6 +33,7 @@ public class InwardRepository : IInwardRepository
         var query = _db.InwardEntries.AsNoTracking()
             .Include(x => x.Customer)
             .Include(x => x.Vendor)
+            .Include(x => x.Purpose)
             .Where(x => !x.IsDeleted);
 
         if (!string.IsNullOrWhiteSpace(filter.SearchText))
@@ -83,6 +85,7 @@ public class InwardRepository : IInwardRepository
         => await _db.InwardEntries.AsNoTracking()
             .Include(x => x.Customer)
             .Include(x => x.Vendor)
+            .Include(x => x.Purpose)
             .Where(x => !x.IsDeleted && x.InwardDate >= from.Date && x.InwardDate <= to.Date)
             .OrderBy(x => x.InwardDate)
             .ToListAsync(ct);
@@ -91,6 +94,7 @@ public class InwardRepository : IInwardRepository
         => await _db.InwardEntries.AsNoTracking()
             .Include(x => x.Customer)
             .Include(x => x.Vendor)
+            .Include(x => x.Purpose)
             .Include(x => x.Items).ThenInclude(x => x.Item)
             .Include(x => x.Items).ThenInclude(x => x.Serials)
             .Where(x => !x.IsDeleted && x.InwardDate >= from.Date && x.InwardDate <= to.Date)
@@ -177,6 +181,7 @@ public class DCRepository : IDCRepository
     public Task<DispatchChallan?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => _db.DispatchChallans.AsNoTracking()
             .Include(x => x.Customer)
+            .Include(x => x.Purpose)
             .Include(x => x.SourceInwardEntry)
             .Include(x => x.Items).ThenInclude(x => x.Item)
             .Include(x => x.Items).ThenInclude(x => x.Serials)
@@ -198,6 +203,7 @@ public class DCRepository : IDCRepository
     {
         var query = _db.DispatchChallans.AsNoTracking()
             .Include(x => x.Customer)
+            .Include(x => x.Purpose)
             .Where(x => !x.IsDeleted);
 
         if (!string.IsNullOrWhiteSpace(filter.SearchText))
@@ -242,6 +248,7 @@ public class DCRepository : IDCRepository
     public async Task<IReadOnlyList<DispatchChallan>> GetByPeriodAsync(DateTime from, DateTime to, CancellationToken ct = default)
         => await _db.DispatchChallans.AsNoTracking()
             .Include(x => x.Customer)
+            .Include(x => x.Purpose)
             .Where(x => !x.IsDeleted && x.DcDate >= from.Date && x.DcDate <= to.Date)
             .OrderBy(x => x.DcDate)
             .ToListAsync(ct);
@@ -249,6 +256,7 @@ public class DCRepository : IDCRepository
     public async Task<IReadOnlyList<DispatchChallan>> GetByPeriodDetailedAsync(DateTime from, DateTime to, CancellationToken ct = default)
         => await _db.DispatchChallans.AsNoTracking()
             .Include(x => x.Customer)
+            .Include(x => x.Purpose)
             .Include(x => x.SourceInwardEntry)
             .Include(x => x.Items).ThenInclude(x => x.Item)
             .Include(x => x.Items).ThenInclude(x => x.Serials)

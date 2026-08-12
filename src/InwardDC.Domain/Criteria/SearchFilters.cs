@@ -35,6 +35,13 @@ public class ItemCategorySearchFilter : PagedRequest
     public bool IncludeDeleted { get; set; }
 }
 
+public class PurposeSearchFilter : PagedRequest
+{
+    public string? SearchText { get; set; }
+    public bool? IsActive { get; set; }
+    public bool IncludeDeleted { get; set; }
+}
+
 /// <summary>
 /// Inward search supports lookups by customer, serial number, model, date range,
 /// invoice number, challan number and status — the "powerful search" requirement.

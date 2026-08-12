@@ -12,6 +12,8 @@ public class DispatchChallan : EntityBase
     public DateTime DcDate { get; set; } = DateTime.Today;
     public Guid CustomerId { get; set; }
     public Customer? Customer { get; set; }
+    public Guid? PurposeId { get; set; }
+    public Purpose? Purpose { get; set; }
     public Guid? SourceInwardEntryId { get; set; }
     public InwardEntry? SourceInwardEntry { get; set; }
     public string ReferenceChallanNo { get; set; } = string.Empty;

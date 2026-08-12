@@ -27,6 +27,8 @@ public class DispatchDto
     public DateTime DcDate { get; set; }
     public Guid CustomerId { get; set; }
     public string CustomerName { get; set; } = string.Empty;
+    public Guid? PurposeId { get; set; }
+    public string PurposeName { get; set; } = string.Empty;
     public Guid? SourceInwardEntryId { get; set; }
     public string SourceInwardNo { get; set; } = string.Empty;
     public string ReferenceChallanNo { get; set; } = string.Empty;
@@ -62,6 +64,7 @@ public class DispatchSaveRequest
     public Guid? Id { get; set; }
     public DateTime DcDate { get; set; } = DateTime.Today;
     public Guid CustomerId { get; set; }
+    public Guid? PurposeId { get; set; }
     public Guid? SourceInwardEntryId { get; set; }
     public string ReferenceChallanNo { get; set; } = string.Empty;
     public string TransportDetails { get; set; } = string.Empty;

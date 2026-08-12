@@ -263,3 +263,70 @@ public class ItemCategoryRepository : IItemCategoryRepository
 
     public void Update(ItemCategory category) => _db.UpdateTracked(category);
 }
+
+public class PurposeRepository : IPurposeRepository
+{
+    private readonly AppDbContext _db;
+
+    public PurposeRepository(AppDbContext db)
+    {
+        _db = db;
+    }
+
+    public Task<Purpose?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => _db.Purposes.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct);
+
+    public Task<Purpose?> GetByNameAsync(string name, CancellationToken ct = default)
+        => _db.Purposes.AsNoTracking().FirstOrDefaultAsync(x => x.Name == name && !x.IsDeleted, ct);
+
+    public async Task<PagedResult<Purpose>> GetPagedAsync(PurposeSearchFilter filter, CancellationToken ct = default)
+    {
+        var query = _db.Purposes.AsNoTracking().Where(x => !x.IsDeleted);
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchText))
+        {
+            var term = filter.SearchText.Trim();
+            query = query.Where(x => x.Name.Contains(term) || x.Description.Contains(term));
+        }
+
+        if (filter.IsActive.HasValue)
+            query = query.Where(x => x.IsActive == filter.IsActive.Value);
+
+        query = (filter.SortBy?.ToLower()) switch
+        {
+            "name" => filter.SortDescending ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name),
+            _ => query.OrderBy(x => x.Name)
+        };
+
+        return await PagingHelper.ToPagedAsync(query, filter, ct);
+    }
+
+    public async Task<IReadOnlyList<Purpose>> GetAllActiveAsync(CancellationToken ct = default)
+        => await _db.Purposes.AsNoTracking()
+            .Where(x => !x.IsDeleted && x.IsActive)
+            .OrderBy(x => x.Name)
+            .ToListAsync(ct);
+
+    public Task<bool> NameExistsAsync(string name, Guid? exceptId = null, CancellationToken ct = default)
+    {
+        var query = _db.Purposes.AsNoTracking().Where(x => !x.IsDeleted && x.Name == name);
+        if (exceptId.HasValue)
+            query = query.Where(x => x.Id != exceptId.Value);
+        return query.AnyAsync(ct);
+    }
+
+    public async Task<bool> IsInUseAsync(Guid purposeId, CancellationToken ct = default)
+    {
+        var inInward = await _db.InwardEntries.AsNoTracking()
+            .AnyAsync(x => !x.IsDeleted && x.PurposeId == purposeId, ct);
+        if (inInward)
+            return true;
+        return await _db.DispatchChallans.AsNoTracking()
+            .AnyAsync(x => !x.IsDeleted && x.PurposeId == purposeId, ct);
+    }
+
+    public Task AddAsync(Purpose purpose, CancellationToken ct = default)
+        => _db.Purposes.AddAsync(purpose, ct).AsTask();
+
+    public void Update(Purpose purpose) => _db.UpdateTracked(purpose);
+}

@@ -60,6 +60,9 @@
                     <TextBlock Text="Vendor" Margin="0,6,0,0" />
                     <ComboBox ItemsSource="{Binding Vendors}" SelectedItem="{Binding Vendor}"
                               DisplayMemberPath="Name" />
+                    <TextBlock Text="Purpose" Margin="0,6,0,0" />
+                    <ComboBox ItemsSource="{Binding Purposes}" SelectedItem="{Binding Purpose}"
+                              DisplayMemberPath="Name" />
                     <TextBlock Text="Ref Invoice Date" Margin="0,6,0,0" />
                     <DatePicker SelectedDate="{Binding ReferenceInvoiceDate}" />
                 </StackPanel>

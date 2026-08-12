@@ -19,6 +19,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddScoped<IVendorService, VendorService>();
         services.AddScoped<IItemService, ItemService>();
         services.AddScoped<IItemCategoryService, ItemCategoryService>();
+        services.AddScoped<IPurposeService, PurposeService>();
         services.AddScoped<IInwardService, InwardService>();
         services.AddScoped<IDispatchService, DispatchService>();
         services.AddScoped<ISearchService, SearchService>();

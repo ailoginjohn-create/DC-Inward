@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
-  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.2/InwardDC.exe",
-  "notes": "Fixed the Inward import template - it is now a valid Excel file and opens correctly."
+  "version": "1.0.3",
+  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.3/InwardDC.exe",
+  "notes": "Added the new Purposes master (evaluation/testing/demo/service/other) and Purpose selection on Inward entries and Dispatch challans."
 }

@@ -40,20 +40,23 @@ public partial class DispatchEditorViewModel : ViewModelBase
 {
     private readonly IDispatchService _dispatch;
     private readonly ICustomerService _customers;
+    private readonly IPurposeService _purposes;
 
     private bool _isSerialTracked;
 
     public DispatchEditorViewModel(ICurrentUserService currentUser, IDispatchService dispatch,
-        ICustomerService customers) : base(currentUser)
+        ICustomerService customers, IPurposeService purposes) : base(currentUser)
     {
         _dispatch = dispatch;
         _customers = customers;
+        _purposes = purposes;
         Title = "Dispatch Challan";
     }
 
     public event Action<bool>? RequestClose;
 
     public ObservableCollection<DropdownItemDto> Customers { get; } = new();
+    public ObservableCollection<DropdownItemDto> Purposes { get; } = new();
     public ObservableCollection<AvailableStockDto> Stock { get; } = new();
     public ObservableCollection<SerialOption> SerialOptions { get; } = new();
     public ObservableCollection<DispatchLineRow> Lines { get; } = new();
@@ -61,6 +64,7 @@ public partial class DispatchEditorViewModel : ViewModelBase
     [ObservableProperty] private string _dcNo = string.Empty;
     [ObservableProperty] private DateTime _dcDate = DateTime.Today;
     [ObservableProperty] private DropdownItemDto? _customer;
+    [ObservableProperty] private DropdownItemDto? _purpose;
     [ObservableProperty] private string _referenceChallanNo = string.Empty;
     [ObservableProperty] private string _transportDetails = string.Empty;
     [ObservableProperty] private string _remarks = string.Empty;
@@ -76,6 +80,10 @@ public partial class DispatchEditorViewModel : ViewModelBase
             Customers.Clear();
             foreach (var c in await _customers.GetDropdownAsync())
                 Customers.Add(c);
+
+            Purposes.Clear();
+            foreach (var p in await _purposes.GetDropdownAsync())
+                Purposes.Add(p);
 
             DcNo = await _dispatch.PreviewNextNumberAsync();
             await RefreshStockAsync();
@@ -187,6 +195,7 @@ public partial class DispatchEditorViewModel : ViewModelBase
             {
                 DcDate = DcDate,
                 CustomerId = Customer?.Id ?? Guid.Empty,
+                PurposeId = Purpose?.Id,
                 ReferenceChallanNo = ReferenceChallanNo,
                 TransportDetails = TransportDetails,
                 Remarks = Remarks

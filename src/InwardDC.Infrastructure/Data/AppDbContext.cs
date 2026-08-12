@@ -18,6 +18,7 @@ public class AppDbContext : DbContext
     public DbSet<Vendor> Vendors => Set<Vendor>();
     public DbSet<Item> Items => Set<Item>();
     public DbSet<ItemCategory> ItemCategories => Set<ItemCategory>();
+    public DbSet<Purpose> Purposes => Set<Purpose>();
     public DbSet<InwardEntry> InwardEntries => Set<InwardEntry>();
     public DbSet<InwardItem> InwardItems => Set<InwardItem>();
     public DbSet<DispatchChallan> DispatchChallans => Set<DispatchChallan>();
@@ -83,6 +84,7 @@ public class AppDbContext : DbContext
         builder.ApplyConfiguration<Vendor>(new MasterConfigurations(deletedFilter));
         builder.ApplyConfiguration<Item>(new MasterConfigurations(deletedFilter));
         builder.ApplyConfiguration<ItemCategory>(new MasterConfigurations(deletedFilter));
+        builder.ApplyConfiguration<Purpose>(new MasterConfigurations(deletedFilter));
         builder.ApplyConfiguration<InwardEntry>(new TransactionConfigurations(deletedFilter));
         builder.ApplyConfiguration<InwardItem>(new TransactionConfigurations(deletedFilter));
         builder.ApplyConfiguration<DispatchChallan>(new TransactionConfigurations(deletedFilter));

@@ -106,6 +106,23 @@ public class ItemCategorySaveRequest
     public bool IsActive { get; set; } = true;
 }
 
+public class PurposeDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
+    public string DisplayName => Name;
+}
+
+public class PurposeSaveRequest
+{
+    public Guid? Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public bool IsActive { get; set; } = true;
+}
+
 public class ItemDto
 {
     public Guid Id { get; set; }

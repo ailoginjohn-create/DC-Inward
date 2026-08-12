@@ -16,6 +16,7 @@
         <DataTemplate DataType="{x:Type vm:VendorsViewModel}"><views:VendorsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ItemsViewModel}"><views:ItemsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ItemCategoriesViewModel}"><views:ItemCategoriesView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PurposesViewModel}"><views:PurposesView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:UsersViewModel}"><views:UsersView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SearchViewModel}"><views:SearchView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ReportsViewModel}"><views:ReportsView /></DataTemplate>

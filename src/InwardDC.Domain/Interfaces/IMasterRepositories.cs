@@ -55,3 +55,16 @@ public interface IItemCategoryRepository
     Task AddAsync(ItemCategory category, CancellationToken ct = default);
     void Update(ItemCategory category);
 }
+
+/// <summary>Inward/DC purpose master data access contract.</summary>
+public interface IPurposeRepository
+{
+    Task<Purpose?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<Purpose?> GetByNameAsync(string name, CancellationToken ct = default);
+    Task<PagedResult<Purpose>> GetPagedAsync(PurposeSearchFilter filter, CancellationToken ct = default);
+    Task<IReadOnlyList<Purpose>> GetAllActiveAsync(CancellationToken ct = default);
+    Task<bool> NameExistsAsync(string name, Guid? exceptId = null, CancellationToken ct = default);
+    Task<bool> IsInUseAsync(Guid purposeId, CancellationToken ct = default);
+    Task AddAsync(Purpose purpose, CancellationToken ct = default);
+    void Update(Purpose purpose);
+}

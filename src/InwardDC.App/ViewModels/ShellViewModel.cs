@@ -88,6 +88,7 @@ public partial class ShellViewModel : ViewModelBase
         new("Vendors", typeof(VendorsViewModel)),
         new("Items", typeof(ItemsViewModel)),
         new("Item Categories", typeof(ItemCategoriesViewModel)),
+        new("Purposes", typeof(PurposesViewModel)),
         new("Search", typeof(SearchViewModel)),
         new("Reports", typeof(ReportsViewModel)),
         new("Users", typeof(UsersViewModel), RequiresAdmin: true),

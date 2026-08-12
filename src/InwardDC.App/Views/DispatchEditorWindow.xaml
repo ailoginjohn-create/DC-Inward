@@ -55,6 +55,9 @@
                     <TextBlock Text="Customer" />
                     <ComboBox ItemsSource="{Binding Customers}" SelectedItem="{Binding Customer}"
                               DisplayMemberPath="Name" />
+                    <TextBlock Text="Purpose" Margin="0,6,0,0" />
+                    <ComboBox ItemsSource="{Binding Purposes}" SelectedItem="{Binding Purpose}"
+                              DisplayMemberPath="Name" />
                     <TextBlock Text="Remarks" Margin="0,6,0,0" />
                     <TextBox Text="{Binding Remarks}" Height="60" AcceptsReturn="True" TextWrapping="Wrap" />
                 </StackPanel>

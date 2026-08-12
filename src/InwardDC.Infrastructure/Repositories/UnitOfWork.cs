@@ -17,6 +17,7 @@ public class UnitOfWork : IUnitOfWork
     public IVendorRepository Vendors { get; }
     public IItemRepository Items { get; }
     public IItemCategoryRepository ItemCategories { get; }
+    public IPurposeRepository Purposes { get; }
     public IInwardRepository Inwards { get; }
     public IDCRepository DCs { get; }
     public IAttachmentRepository Attachments { get; }
@@ -34,6 +35,7 @@ public class UnitOfWork : IUnitOfWork
         Vendors = new VendorRepository(db);
         Items = new ItemRepository(db);
         ItemCategories = new ItemCategoryRepository(db);
+        Purposes = new PurposeRepository(db);
         Inwards = new InwardRepository(db);
         DCs = new DCRepository(db);
         Attachments = new AttachmentRepository(db);

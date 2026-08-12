@@ -4,11 +4,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace InwardDC.Infrastructure.Data;
 
-/// <summary>Configurations for the master tables (customers, vendors, items, categories).</summary>
+/// <summary>Configurations for the master tables (customers, vendors, items, categories, purposes).</summary>
 public class MasterConfigurations : IEntityTypeConfiguration<Customer>,
     IEntityTypeConfiguration<Vendor>,
     IEntityTypeConfiguration<Item>,
-    IEntityTypeConfiguration<ItemCategory>
+    IEntityTypeConfiguration<ItemCategory>,
+    IEntityTypeConfiguration<Purpose>
 {
     private readonly string? _deletedFilter;
 
@@ -102,6 +103,18 @@ public class MasterConfigurations : IEntityTypeConfiguration<Customer>,
         builder.Property(x => x.Description).HasMaxLength(512);
 
         var index = builder.HasIndex(x => x.Code).IsUnique();
+        if (_deletedFilter is not null)
+            index.HasFilter(_deletedFilter);
+    }
+
+    public void Configure(EntityTypeBuilder<Purpose> builder)
+    {
+        builder.ToTable("Purposes");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Name).HasMaxLength(128).IsRequired();
+        builder.Property(x => x.Description).HasMaxLength(512);
+
+        var index = builder.HasIndex(x => x.Name).IsUnique();
         if (_deletedFilter is not null)
             index.HasFilter(_deletedFilter);
     }

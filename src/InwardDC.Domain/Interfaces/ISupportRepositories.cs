@@ -77,6 +77,7 @@ public interface IUnitOfWork
     IVendorRepository Vendors { get; }
     IItemRepository Items { get; }
     IItemCategoryRepository ItemCategories { get; }
+    IPurposeRepository Purposes { get; }
     IInwardRepository Inwards { get; }
     IDCRepository DCs { get; }
     IAttachmentRepository Attachments { get; }
