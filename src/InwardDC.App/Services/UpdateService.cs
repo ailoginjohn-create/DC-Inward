@@ -25,9 +25,12 @@ public sealed class UpdateService : IUpdateService
 
     public async Task<UpdateInfo?> CheckForUpdateAsync(CancellationToken ct = default)
     {
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(30));
+
         try
         {
-            using var response = await _http.GetAsync(ManifestUrl, ct).ConfigureAwait(false);
+            using var response = await _http.GetAsync(ManifestUrl, timeoutCts.Token).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
                 return null;
 
@@ -63,13 +66,17 @@ public sealed class UpdateService : IUpdateService
         var fileName = $"InwardDC-{TrimVersion(info.Version)}.exe";
         var target = Path.Combine(updatesDir, fileName);
 
-        using var response = await _http.GetAsync(info.Url, HttpCompletionOption.ResponseHeadersRead, ct)
+        // The update is a ~220 MB self-contained exe; allow plenty of time for the download.
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeoutCts.CancelAfter(TimeSpan.FromMinutes(30));
+
+        using var response = await _http.GetAsync(info.Url, HttpCompletionOption.ResponseHeadersRead, timeoutCts.Token)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
-        await using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+        await using var stream = await response.Content.ReadAsStreamAsync(timeoutCts.Token).ConfigureAwait(false);
         await using var file = File.Create(target);
-        await stream.CopyToAsync(file, ct).ConfigureAwait(false);
+        await stream.CopyToAsync(file, timeoutCts.Token).ConfigureAwait(false);
 
         if (file.Length < 1_000_000)
             throw new InvalidOperationException("Downloaded file is unexpectedly small and was rejected.");
@@ -120,7 +127,9 @@ public sealed class UpdateService : IUpdateService
 
     private static HttpClient CreateClient()
     {
-        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+        // No global timeout here; each request applies its own timeout token so the
+        // small manifest check stays quick while the large update download is not cut short.
+        var client = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
         client.DefaultRequestHeaders.UserAgent.ParseAdd("InwardDC-Updater/1.0");
         return client;
     }

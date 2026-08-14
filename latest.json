@@ -1,5 +1,5 @@
 {
-  "version": "1.0.3",
-  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.3/InwardDC.exe",
-  "notes": "Added the new Purposes master (evaluation/testing/demo/service/other) and Purpose selection on Inward entries and Dispatch challans."
+  "version": "1.0.4",
+  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.4/InwardDC.exe",
+  "notes": "Fixed the update download timing out: the 20-second limit was too short for the ~220 MB app, so downloads now have a 30-minute limit."
 }
