@@ -75,6 +75,7 @@ public partial class InwardEditorViewModel : ViewModelBase
     [ObservableProperty] private DateTime? _referenceInvoiceDate;
     [ObservableProperty] private string _challanNo = string.Empty;
     [ObservableProperty] private string _transportDetails = string.Empty;
+    [ObservableProperty] private string _receivedBy = string.Empty;
     [ObservableProperty] private string _remarks = string.Empty;
     [ObservableProperty] private InwardStatus _status = InwardStatus.Received;
     [ObservableProperty] private bool _isEditMode;
@@ -105,6 +106,7 @@ public partial class InwardEditorViewModel : ViewModelBase
                 ReferenceInvoiceDate = dto.ReferenceInvoiceDate;
                 ChallanNo = dto.ChallanNo;
                 TransportDetails = dto.TransportDetails;
+                ReceivedBy = dto.ReceivedBy;
                 Remarks = dto.Remarks;
                 Status = dto.Status;
                 IsEditMode = true;
@@ -213,6 +215,7 @@ public partial class InwardEditorViewModel : ViewModelBase
                 ReferenceInvoiceDate = ReferenceInvoiceDate,
                 ChallanNo = ChallanNo,
                 TransportDetails = TransportDetails,
+                ReceivedBy = ReceivedBy,
                 Remarks = Remarks,
                 Status = Status
             };

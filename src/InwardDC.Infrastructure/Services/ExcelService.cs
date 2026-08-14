@@ -41,10 +41,8 @@ public class ExcelService : IExcelService
             var ws = wb.Worksheets.Add(SheetName);
             var headers = new[]
             {
-                "Inward Date (dd/MM/yyyy)", "Inward Type (Customer Return / Purchase / Service In / Other)",
-                "Customer Code or Name", "Vendor Code or Name", "Invoice No", "Invoice Date (dd/MM/yyyy)",
-                "Challan No", "Item Code", "Item Name", "Make", "Model", "Serial Number",
-                "Quantity", "Rate", "Amount", "HSN", "Remarks"
+                "DATE", "D.C No", "Invoice No", "Items Received From", "Name of Item",
+                "Qty", "Serial No", "Purpose", "Remarks", "Received By", "Remarks"
             };
             for (int i = 0; i < headers.Length; i++)
             {
@@ -56,14 +54,12 @@ public class ExcelService : IExcelService
             }
 
             ws.Cell(2, 1).Value = DateTime.Today.ToString("dd/MM/yyyy");
-            ws.Cell(2, 2).Value = "Customer Return";
-            ws.Cell(2, 3).Value = "Sample Customer";
-            ws.Cell(2, 8).Value = "ITM/2026/0001";
-            ws.Cell(2, 9).Value = "Patient Monitor";
-            ws.Cell(2, 12).Value = "SN-0001";
-            ws.Cell(2, 13).Value = 1;
-            ws.Cell(2, 14).Value = 1000;
-            ws.Cell(2, 15).Value = 1000;
+            ws.Cell(2, 4).Value = "Sample Customer";
+            ws.Cell(2, 5).Value = "Patient Monitor";
+            ws.Cell(2, 6).Value = 1;
+            ws.Cell(2, 7).Value = "SN-0001";
+            ws.Cell(2, 8).Value = "Evaluation";
+            ws.Cell(2, 10).Value = "Your Name";
 
             ws.SheetView.FreezeRows(1);
             ws.Columns().AdjustToContents();
@@ -92,64 +88,58 @@ public class ExcelService : IExcelService
             ct.ThrowIfCancellationRequested();
             result.TotalRows++;
 
-            var empty = Enumerable.Range(1, 17).All(c => string.IsNullOrWhiteSpace(GetString(ws, r, c)));
+            var empty = Enumerable.Range(1, 11).All(c => string.IsNullOrWhiteSpace(GetString(ws, r, c)));
             if (empty) continue;
 
             var row = new ImportRow { SheetRow = r };
 
-            // Date
+            // 1. Date
             var dateText = GetString(ws, r, 1);
             if (string.IsNullOrWhiteSpace(dateText) || !TryParseDate(dateText, out var date))
             {
-                errors.Add(new ImportRowError { Row = r, Message = "Inward date is missing or invalid.", Value = dateText });
+                errors.Add(new ImportRowError { Row = r, Message = "Date is missing or invalid.", Value = dateText });
                 continue;
             }
             row.InwardDate = date;
 
-            // Type
-            row.InwardType = ParseType(GetString(ws, r, 2));
+            // 2. D.C No -> challan number, 3. Invoice No
+            row.ChallanNo = GetString(ws, r, 2);
+            row.InvoiceNo = GetString(ws, r, 3);
 
-            // Customer / vendor
-            row.Customer = GetString(ws, r, 3);
-            row.Vendor = GetString(ws, r, 4);
-            if (row.InwardType == InwardType.Purchase && string.IsNullOrWhiteSpace(row.Vendor))
+            // 4. Items Received From (resolved against customer OR vendor master)
+            row.Party = GetString(ws, r, 4);
+            if (string.IsNullOrWhiteSpace(row.Party))
             {
-                errors.Add(new ImportRowError { Row = r, Message = "Vendor is required for purchase type." });
-                continue;
-            }
-            if (row.InwardType != InwardType.Purchase && string.IsNullOrWhiteSpace(row.Customer))
-            {
-                errors.Add(new ImportRowError { Row = r, Message = "Customer is required for this type." });
+                errors.Add(new ImportRowError { Row = r, Message = "Items Received From is required.", Value = row.Party });
                 continue;
             }
 
-            row.InvoiceNo = GetString(ws, r, 5);
-            var invDateText = GetString(ws, r, 6);
-            row.InvoiceDate = string.IsNullOrWhiteSpace(invDateText) ? null : TryParseDate(invDateText, out var invDate) ? invDate : null;
-            row.ChallanNo = GetString(ws, r, 7);
-            row.ItemCode = GetString(ws, r, 8);
-            row.ItemName = GetString(ws, r, 9);
-            row.Make = GetString(ws, r, 10);
-            row.Model = GetString(ws, r, 11);
-            row.SerialNumber = GetString(ws, r, 12);
-
-            // Quantity / rate / amount
-            if (!TryGetDecimal(ws, r, 13, out var qty) || qty <= 0)
+            // 5. Name of item
+            row.ItemName = GetString(ws, r, 5);
+            if (string.IsNullOrWhiteSpace(row.ItemName))
             {
-                errors.Add(new ImportRowError { Row = r, Message = "Quantity must be a number greater than zero.", Value = GetString(ws, r, 13) });
+                errors.Add(new ImportRowError { Row = r, Message = "Name of Item is required.", Value = row.ItemName });
+                continue;
+            }
+
+            // 6. Quantity
+            if (!TryGetDecimal(ws, r, 6, out var qty) || qty <= 0)
+            {
+                errors.Add(new ImportRowError { Row = r, Message = "Qty must be a number greater than zero.", Value = GetString(ws, r, 6) });
                 continue;
             }
             row.Quantity = qty;
-            row.Rate = TryGetDecimal(ws, r, 14, out var rate) ? rate : 0;
-            row.Amount = TryGetDecimal(ws, r, 15, out var amount) && amount > 0 ? amount : row.Quantity * row.Rate;
-            row.Hsn = GetString(ws, r, 16);
-            row.Remarks = GetString(ws, r, 17);
 
-            if (string.IsNullOrWhiteSpace(row.ItemCode) && string.IsNullOrWhiteSpace(row.ItemName))
-            {
-                errors.Add(new ImportRowError { Row = r, Message = "Item code or item name is required." });
-                continue;
-            }
+            // 7. Serial No
+            row.SerialNumber = GetString(ws, r, 7);
+
+            // 8. Purpose (resolved by name; optional)
+            row.PurposeName = GetString(ws, r, 8);
+
+            // 9. Remarks (line)  |  10. Received By (header)  |  11. Remarks (header)
+            row.LineRemarks = GetString(ws, r, 9);
+            row.ReceivedBy = GetString(ws, r, 10);
+            row.HeaderRemarks = GetString(ws, r, 11);
 
             // Duplicate serial within the file
             if (!string.IsNullOrWhiteSpace(row.SerialNumber))
@@ -211,35 +201,35 @@ public class ExcelService : IExcelService
 
         if (errors.Count > 0) return errors;
 
-        // Resolve customer / vendor / item references
+        // Resolve party (customer or vendor), item and purpose references
         var customerCache = new Dictionary<string, Customer?>(StringComparer.OrdinalIgnoreCase);
         var vendorCache = new Dictionary<string, Vendor?>(StringComparer.OrdinalIgnoreCase);
         var itemCache = new Dictionary<string, Item?>(StringComparer.OrdinalIgnoreCase);
+        var purposeCache = new Dictionary<string, Purpose?>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var row in rows)
         {
-            if (!string.IsNullOrWhiteSpace(row.Customer))
+            if (!string.IsNullOrWhiteSpace(row.Party))
             {
-                row.CustomerEntity = await ResolveCustomerAsync(row.Customer, customerCache, ct);
+                // Items Received From is matched against customers first, then vendors.
+                row.CustomerEntity = await ResolveCustomerAsync(row.Party, customerCache, ct);
                 if (row.CustomerEntity is null)
+                    row.VendorEntity = await ResolveVendorAsync(row.Party, vendorCache, ct);
+
+                if (row.CustomerEntity is null && row.VendorEntity is null)
                 {
-                    errors.Add(new ImportRowError { Row = row.SheetRow, Message = $"Customer '{row.Customer}' not found in master.", Value = row.Customer });
+                    errors.Add(new ImportRowError { Row = row.SheetRow, Message = $"Items Received From '{row.Party}' not found in customer or vendor master.", Value = row.Party });
+                }
+                else
+                {
+                    row.InwardType = row.VendorEntity is not null ? InwardType.Purchase : InwardType.CustomerReturn;
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(row.Vendor))
-            {
-                row.VendorEntity = await ResolveVendorAsync(row.Vendor, vendorCache, ct);
-                if (row.VendorEntity is null)
-                {
-                    errors.Add(new ImportRowError { Row = row.SheetRow, Message = $"Vendor '{row.Vendor}' not found in master.", Value = row.Vendor });
-                }
-            }
-
-            var itemKey = row.ItemCode ?? row.ItemName;
+            var itemKey = row.ItemName;
             if (!string.IsNullOrWhiteSpace(itemKey))
             {
-                row.ItemEntity = await ResolveItemAsync(row.ItemCode, row.ItemName, itemCache, ct);
+                row.ItemEntity = await ResolveItemAsync(null, row.ItemName, itemCache, ct);
                 if (row.ItemEntity is null && !string.IsNullOrWhiteSpace(row.SerialNumber))
                 {
                     errors.Add(new ImportRowError
@@ -248,6 +238,15 @@ public class ExcelService : IExcelService
                         Message = $"Item '{itemKey}' not found in master, and a serial number requires a master item.",
                         Value = itemKey
                     });
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(row.PurposeName))
+            {
+                row.PurposeEntity = await ResolvePurposeAsync(row.PurposeName, purposeCache, ct);
+                if (row.PurposeEntity is null)
+                {
+                    errors.Add(new ImportRowError { Row = row.SheetRow, Message = $"Purpose '{row.PurposeName}' not found in master.", Value = row.PurposeName });
                 }
             }
 
@@ -260,7 +259,7 @@ public class ExcelService : IExcelService
 
     private async Task<int> CreateInwardEntriesAsync(List<ImportRow> rows, CancellationToken ct)
     {
-        var grouped = rows.GroupBy(r => new InwardGroupKey(r.InwardDate.Date, r.InwardType, r.CustomerEntity?.Id, r.VendorEntity?.Id, r.InvoiceNo, r.ChallanNo));
+        var grouped = rows.GroupBy(r => new InwardGroupKey(r.InwardDate.Date, r.InwardType, r.CustomerEntity?.Id, r.VendorEntity?.Id, r.PurposeEntity?.Id, r.InvoiceNo, r.ChallanNo));
         var created = 0;
 
         var settings = await _uow.Settings.GetValueAsync("Numbering.InwardPrefix", ct) ?? "INW";
@@ -276,8 +275,11 @@ public class ExcelService : IExcelService
                 InwardType = group.Key.Type,
                 CustomerId = group.Key.CustomerId,
                 VendorId = group.Key.VendorId,
+                PurposeId = group.Key.PurposeId,
                 ReferenceInvoiceNo = group.Key.InvoiceNo ?? string.Empty,
                 ChallanNo = group.Key.ChallanNo ?? string.Empty,
+                ReceivedBy = group.First().ReceivedBy ?? string.Empty,
+                Remarks = group.First().HeaderRemarks ?? string.Empty,
                 Status = InwardStatus.Received
             };
 
@@ -285,19 +287,18 @@ public class ExcelService : IExcelService
 
             foreach (var row in group)
             {
-                var isSerialTracked = row.ItemEntity?.IsSerialTracked ?? !string.IsNullOrWhiteSpace(row.SerialNumber);
                 var lineItem = new InwardItem
                 {
                     ItemId = row.ItemEntity?.Id,
                     ItemName = row.ItemEntity?.Name ?? row.ItemName ?? string.Empty,
                     ItemMake = row.Make ?? string.Empty,
                     ItemModel = row.Model ?? string.Empty,
-                    HsnCode = row.Hsn ?? string.Empty,
+                    HsnCode = string.Empty,
                     Unit = row.ItemEntity?.Unit ?? "Nos",
                     Quantity = row.Quantity,
-                    Rate = row.Rate,
-                    Amount = row.Amount,
-                    Remarks = row.Remarks ?? string.Empty
+                    Rate = 0,
+                    Amount = 0,
+                    Remarks = row.LineRemarks ?? string.Empty
                 };
 
                 if (!string.IsNullOrWhiteSpace(row.SerialNumber))
@@ -308,7 +309,7 @@ public class ExcelService : IExcelService
                         SerialNo = row.SerialNumber.Trim(),
                         Status = SerialStatus.InStock,
                         InwardEntryId = entry.Id,
-                        Notes = row.Remarks ?? string.Empty
+                        Notes = row.LineRemarks ?? string.Empty
                     });
                 }
 
@@ -354,6 +355,15 @@ public class ExcelService : IExcelService
             ?? (await _uow.Vendors.GetPagedAsync(new VendorSearchFilter { SearchText = value, PageSize = 5 }, ct)).Items.FirstOrDefault();
         cache[value] = vendor;
         return vendor;
+    }
+
+    private async Task<Purpose?> ResolvePurposeAsync(string value, Dictionary<string, Purpose?> cache, CancellationToken ct)
+    {
+        var key = value.Trim();
+        if (cache.TryGetValue(key, out var cached)) return cached;
+        var purpose = await _uow.Purposes.GetByNameAsync(key, ct);
+        cache[key] = purpose;
+        return purpose;
     }
 
     private async Task<Item?> ResolveItemAsync(string? code, string? name, Dictionary<string, Item?> cache, CancellationToken ct)
@@ -510,39 +520,28 @@ public class ExcelService : IExcelService
             System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out date);
     }
 
-    private static InwardType ParseType(string text)
-    {
-        var t = text.Trim().ToLowerInvariant();
-        if (t.Contains("purchase")) return InwardType.Purchase;
-        if (t.Contains("service")) return InwardType.ServiceIn;
-        if (t.Contains("return")) return InwardType.CustomerReturn;
-        return InwardType.Other;
-    }
-
     private sealed class ImportRow
     {
         public int SheetRow { get; set; }
         public DateTime InwardDate { get; set; }
         public InwardType InwardType { get; set; }
-        public string? Customer { get; set; }
-        public string? Vendor { get; set; }
+        public string? Party { get; set; }
         public string? InvoiceNo { get; set; }
-        public DateTime? InvoiceDate { get; set; }
         public string? ChallanNo { get; set; }
-        public string? ItemCode { get; set; }
         public string? ItemName { get; set; }
-        public string? Make { get; set; }
-        public string? Model { get; set; }
         public string? SerialNumber { get; set; }
         public decimal Quantity { get; set; }
-        public decimal Rate { get; set; }
-        public decimal Amount { get; set; }
-        public string? Hsn { get; set; }
-        public string? Remarks { get; set; }
+        public string? PurposeName { get; set; }
+        public string? LineRemarks { get; set; }
+        public string? ReceivedBy { get; set; }
+        public string? HeaderRemarks { get; set; }
+        public string? Make { get; set; }
+        public string? Model { get; set; }
         public Customer? CustomerEntity { get; set; }
         public Vendor? VendorEntity { get; set; }
+        public Purpose? PurposeEntity { get; set; }
         public Item? ItemEntity { get; set; }
     }
 
-    private sealed record InwardGroupKey(DateTime Date, InwardType Type, Guid? CustomerId, Guid? VendorId, string? InvoiceNo, string? ChallanNo);
+    private sealed record InwardGroupKey(DateTime Date, InwardType Type, Guid? CustomerId, Guid? VendorId, Guid? PurposeId, string? InvoiceNo, string? ChallanNo);
 }

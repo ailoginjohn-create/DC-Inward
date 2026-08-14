@@ -1,5 +1,5 @@
 {
-  "version": "1.0.4",
-  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.4/InwardDC.exe",
-  "notes": "Fixed the update download timing out: the 20-second limit was too short for the ~220 MB app, so downloads now have a 30-minute limit."
+  "version": "1.0.5",
+  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.5/InwardDC.exe",
+  "notes": "New inward import template: DATE | D.C No | Invoice No | Items Received From | Name of Item | Qty | Serial No | Purpose | Remarks | Received By | Remarks. Items Received From matches the customer or vendor master; Purpose and Received By are now captured."
 }

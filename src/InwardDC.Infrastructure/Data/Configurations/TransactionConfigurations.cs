@@ -28,6 +28,7 @@ public class TransactionConfigurations :
         builder.Property(x => x.ReferenceInvoiceNo).HasMaxLength(64);
         builder.Property(x => x.ChallanNo).HasMaxLength(64);
         builder.Property(x => x.TransportDetails).HasMaxLength(256);
+        builder.Property(x => x.ReceivedBy).HasMaxLength(128);
         builder.Property(x => x.Remarks).HasMaxLength(1024);
         builder.Property(x => x.TotalQuantity).HasPrecision(18, 3);
         builder.Property(x => x.TotalAmount).HasPrecision(18, 2);

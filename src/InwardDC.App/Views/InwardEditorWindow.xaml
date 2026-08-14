@@ -70,6 +70,8 @@
                 <StackPanel Grid.Column="2" Margin="0,0,8,0">
                     <TextBlock Text="Challan No" />
                     <TextBox Text="{Binding ChallanNo}" />
+                    <TextBlock Text="Received By" Margin="0,6,0,0" />
+                    <TextBox Text="{Binding ReceivedBy}" />
                     <TextBlock Text="Transport Details" Margin="0,6,0,0" />
                     <TextBox Text="{Binding TransportDetails}" AcceptsReturn="True" Height="60" TextWrapping="Wrap" />
                 </StackPanel>

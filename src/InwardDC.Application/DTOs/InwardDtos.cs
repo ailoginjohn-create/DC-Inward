@@ -36,6 +36,7 @@ public class InwardDto
     public DateTime? ReferenceInvoiceDate { get; set; }
     public string ChallanNo { get; set; } = string.Empty;
     public string TransportDetails { get; set; } = string.Empty;
+    public string ReceivedBy { get; set; } = string.Empty;
     public string Remarks { get; set; } = string.Empty;
     public InwardStatus Status { get; set; }
     public string StatusName => Status.ToString();
@@ -75,6 +76,7 @@ public class InwardSaveRequest
     public DateTime? ReferenceInvoiceDate { get; set; }
     public string ChallanNo { get; set; } = string.Empty;
     public string TransportDetails { get; set; } = string.Empty;
+    public string ReceivedBy { get; set; } = string.Empty;
     public string Remarks { get; set; } = string.Empty;
     public InwardStatus Status { get; set; } = InwardStatus.Received;
     public List<InwardItemLineRequest> Items { get; set; } = new();

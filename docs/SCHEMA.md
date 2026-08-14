@@ -28,6 +28,10 @@ Shared shape: `Code` (unique, e.g. `CUS/2026/0001`), `Name`, `ContactPerson`,
 ### ItemCategories (`ItemCategories`)
 `Code` (unique), `Name`, `Description`, `IsActive`.
 
+### Purposes (`Purposes`)
+`Name` (unique), `Description`, `IsActive`. Referenced by `InwardEntries.PurposeId`
+and `DispatchChallans.PurposeId`.
+
 ### Items (`Items`)
 | Column | Notes |
 | --- | --- |
@@ -44,7 +48,8 @@ Shared shape: `Code` (unique, e.g. `CUS/2026/0001`), `Name`, `ContactPerson`,
 | InwardType | `CustomerReturn` / `Purchase` / `TransferIn` / `Other` |
 | CustomerId / VendorId | nullable FKs; at least one required by rule |
 | ReferenceInvoiceNo, ReferenceInvoiceDate | |
-| ChallanNo, TransportDetails, Remarks | |
+| ChallanNo, TransportDetails, ReceivedBy, Remarks | |
+| PurposeId | nullable FK to `Purposes` |
 | Status | `Draft` / `Received` / `Cancelled` |
 | TotalQuantity, TotalAmount | denormalized for reporting |
 

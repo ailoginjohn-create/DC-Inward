@@ -39,15 +39,18 @@ Actions on the list: **Open**, **Cancel** (irreversible status), **Delete**, **P
 ### Excel import
 
 Use the **Template** to build a sheet. Headers:
-`Date | Type | Customer | Vendor | Invoice No | Invoice Date | Challan No |
-Item Code | Item Name | Make | Model | HSN | Unit | Qty | Rate | Amount | Serial |
-Remarks`
+`DATE | D.C No | Invoice No | Items Received From | Name of Item | Qty | Serial No |
+Purpose | Remarks | Received By | Remarks`
 
-- Rows sharing the same header form a single inward entry.
-- Item Code matches a master item; leave blank for free-text items.
+- Rows sharing the same header (date, party, D.C No, invoice, purpose) form a single
+  inward entry.
+- **Items Received From** is matched against the customer master first, then the vendor
+  master; only one is used per row.
+- **Purpose** must match an existing purpose (e.g. Evaluation, Testing, Service); leave
+  blank if not applicable.
 - For serial-tracked items each serial gets its own row; duplicate serials (in-file or
   in-database) are rejected.
-- Purchase type requires a vendor; the importer reports every rejected row with a reason.
+- The importer reports every rejected row with a reason.
 
 ## Dispatch Challans
 

@@ -74,6 +74,7 @@ public class InwardService : IInwardService
             ReferenceInvoiceDate = request.ReferenceInvoiceDate,
             ChallanNo = request.ChallanNo.Trim(),
             TransportDetails = request.TransportDetails.Trim(),
+            ReceivedBy = request.ReceivedBy.Trim(),
             Remarks = request.Remarks.Trim(),
             Status = request.Status,
             InwardNo = await PreviewNextNumberAsync(ct)
@@ -119,6 +120,7 @@ public class InwardService : IInwardService
         entry.ReferenceInvoiceDate = request.ReferenceInvoiceDate;
         entry.ChallanNo = request.ChallanNo.Trim();
         entry.TransportDetails = request.TransportDetails.Trim();
+        entry.ReceivedBy = request.ReceivedBy.Trim();
         entry.Remarks = request.Remarks.Trim();
         entry.Status = request.Status;
 
@@ -349,6 +351,7 @@ public class InwardService : IInwardService
             ReferenceInvoiceDate = x.ReferenceInvoiceDate,
             ChallanNo = x.ChallanNo,
             TransportDetails = x.TransportDetails,
+            ReceivedBy = x.ReceivedBy,
             Remarks = x.Remarks,
             Status = x.Status,
             TotalQuantity = x.TotalQuantity,

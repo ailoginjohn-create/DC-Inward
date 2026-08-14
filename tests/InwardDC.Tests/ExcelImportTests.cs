@@ -18,9 +18,8 @@ public class ExcelImportTests
         var ws = wb.Worksheets.Add("InwardItems");
         var headers = new[]
         {
-            "Inward Date", "Inward Type", "Customer", "Vendor", "Invoice No", "Invoice Date",
-            "Challan No", "Item Code", "Item Name", "Make", "Model", "Serial Number",
-            "Quantity", "Rate", "Amount", "HSN", "Remarks"
+            "DATE", "D.C No", "Invoice No", "Items Received From", "Name of Item",
+            "Qty", "Serial No", "Purpose", "Remarks", "Received By", "Remarks"
         };
         for (int i = 0; i < headers.Length; i++)
             ws.Cell(1, i + 1).Value = headers[i];
@@ -34,7 +33,7 @@ public class ExcelImportTests
         return stream;
     }
 
-    private async Task<(TestApp app, string customerCode)> SeedMastersAsync()
+    private static async Task<(TestApp app, string customerCode)> SeedMastersAsync()
     {
         var app = new TestApp();
         const string customerCode = "CUS-001";
@@ -70,8 +69,8 @@ public class ExcelImportTests
         {
             var service = CreateService(app);
             using var stream = BuildWorkbook(
-                new object[] { "01/01/2026", "Customer Return", customerCode, "", "INV-900", "", "CH-1", "ITM-A", "Monitor", "", "", "M-0001", 1, 1000, 1000, "", "" },
-                new object[] { "01/01/2026", "Customer Return", customerCode, "", "INV-900", "", "CH-1", "ITM-B", "Gloves", "", "", "", 5, 20, 100, "", "" }
+                new object[] { "01/01/2026", "DC-1", "INV-900", customerCode, "Monitor", 1, "M-0001", "Evaluation", "line remarks", "Rahul", "entry remarks" },
+                new object[] { "01/01/2026", "DC-1", "INV-900", customerCode, "Gloves", 5, "", "Evaluation", "", "Rahul", "entry remarks" }
             );
 
             var result = await service.ImportInwardAsync(stream, "import.xlsx");
@@ -84,9 +83,14 @@ public class ExcelImportTests
             var entries = await app.Uow.Inwards.GetByPeriodDetailedAsync(new DateTime(2026, 1, 1), new DateTime(2026, 1, 2));
             var entry = Assert.Single(entries);
             Assert.StartsWith("INW/", entry.InwardNo);
+            Assert.Equal("DC-1", entry.ChallanNo);
+            Assert.Equal("Rahul", entry.ReceivedBy);
+            Assert.Equal("entry remarks", entry.Remarks);
+            Assert.NotNull(entry.Purpose);
+            Assert.Equal("Evaluation", entry.Purpose!.Name);
             Assert.Equal(2, entry.Items.Count);
             Assert.Equal(6, entry.TotalQuantity);
-            Assert.Equal(1100, entry.TotalAmount);
+            Assert.Equal("line remarks", entry.Items.First().Remarks);
         }
     }
 
@@ -98,8 +102,8 @@ public class ExcelImportTests
         {
             var service = CreateService(app);
             using var stream = BuildWorkbook(
-                new object[] { "01/01/2026", "Customer Return", customerCode, "", "INV-1", "", "CH-1", "ITM-A", "Monitor", "", "", "DUP-1", 1, 100, 100, "", "" },
-                new object[] { "01/01/2026", "Customer Return", customerCode, "", "INV-2", "", "CH-2", "ITM-A", "Monitor", "", "", "DUP-1", 1, 100, 100, "", "" }
+                new object[] { "01/01/2026", "DC-1", "INV-1", customerCode, "Monitor", 1, "DUP-1", "Evaluation", "", "", "" },
+                new object[] { "01/01/2026", "DC-2", "INV-2", customerCode, "Monitor", 1, "DUP-1", "Evaluation", "", "", "" }
             );
 
             var result = await service.ImportInwardAsync(stream, "import.xlsx");
@@ -118,13 +122,13 @@ public class ExcelImportTests
         {
             var service = CreateService(app);
 
-            using (var first = BuildWorkbook(new object[] { "01/01/2026", "Customer Return", customerCode, "", "INV-1", "", "CH-1", "ITM-A", "Monitor", "", "", "DB-1", 1, 100, 100, "", "" }))
+            using (var first = BuildWorkbook(new object[] { "01/01/2026", "DC-1", "INV-1", customerCode, "Monitor", 1, "DB-1", "Evaluation", "", "", "" }))
             {
                 var ok = await service.ImportInwardAsync(first, "import.xlsx");
                 Assert.True(ok.Success);
             }
 
-            using (var second = BuildWorkbook(new object[] { "02/01/2026", "Customer Return", customerCode, "", "INV-2", "", "CH-2", "ITM-A", "Monitor", "", "", "DB-1", 1, 100, 100, "", "" }))
+            using (var second = BuildWorkbook(new object[] { "02/01/2026", "DC-2", "INV-2", customerCode, "Monitor", 1, "DB-1", "Evaluation", "", "", "" }))
             {
                 var result = await service.ImportInwardAsync(second, "import2.xlsx");
                 Assert.False(result.Success);
@@ -147,26 +151,83 @@ public class ExcelImportTests
             using var wb = new XLWorkbook(stream);
             var ws = wb.Worksheets.First();
             Assert.Equal("InwardItems", ws.Name);
-            Assert.Equal("Inward Date (dd/MM/yyyy)", ws.Cell(1, 1).GetString());
-            Assert.Equal("Remarks", ws.Cell(1, 17).GetString());
+            Assert.Equal("DATE", ws.Cell(1, 1).GetString());
+            Assert.Equal("Items Received From", ws.Cell(1, 4).GetString());
+            Assert.Equal("Purpose", ws.Cell(1, 8).GetString());
+            Assert.Equal("Received By", ws.Cell(1, 10).GetString());
+            Assert.Equal("Remarks", ws.Cell(1, 11).GetString());
         }
     }
 
     [Fact]
-    public async Task ImportInwardAsync_RequiresVendorForPurchase()
+    public async Task ImportInwardAsync_ResolvesVendorPartyAsPurchase()
     {
-        var (app, _) = await SeedMastersAsync();
+        var app = new TestApp();
+        using (app)
+        {
+            await app.Uow.Vendors.AddAsync(new Vendor
+            {
+                Code = "VEN-001",
+                Name = "Supply Co",
+                IsActive = true
+            });
+            await app.Uow.Items.AddAsync(new Item
+            {
+                Code = "ITM-B",
+                Name = "Gloves",
+                IsSerialTracked = false,
+                IsActive = true
+            });
+            await app.Uow.SaveChangesAsync();
+
+            var service = CreateService(app);
+            using var stream = BuildWorkbook(
+                new object[] { "01/01/2026", "DC-1", "PO-1", "VEN-001", "Gloves", 5, "", "Service", "", "", "" }
+            );
+
+            var result = await service.ImportInwardAsync(stream, "import.xlsx");
+
+            Assert.True(result.Success, string.Join("; ", result.Errors.Select(e => e.Message)));
+            var entries = await app.Uow.Inwards.GetByPeriodDetailedAsync(new DateTime(2026, 1, 1), new DateTime(2026, 1, 2));
+            var entry = Assert.Single(entries);
+            Assert.Equal(InwardDC.Domain.Enums.InwardType.Purchase, entry.InwardType);
+            Assert.NotNull(entry.Vendor);
+        }
+    }
+
+    [Fact]
+    public async Task ImportInwardAsync_PartyNotFound_ReportsError()
+    {
+        var app = new TestApp();
         using (app)
         {
             var service = CreateService(app);
             using var stream = BuildWorkbook(
-                new object[] { "01/01/2026", "Purchase", "", "", "PO-1", "", "CH-1", "ITM-B", "Gloves", "", "", "", 5, 20, 100, "", "" }
+                new object[] { "01/01/2026", "DC-1", "INV-1", "Nobody Here", "Gloves", 5, "", "", "", "", "" }
             );
 
             var result = await service.ImportInwardAsync(stream, "import.xlsx");
 
             Assert.False(result.Success);
-            Assert.Contains(result.Errors, e => e.Message.Contains("Vendor is required"));
+            Assert.Contains(result.Errors, e => e.Message.Contains("not found in customer or vendor master"));
+        }
+    }
+
+    [Fact]
+    public async Task ImportInwardAsync_UnknownPurpose_ReportsError()
+    {
+        var (app, customerCode) = await SeedMastersAsync();
+        using (app)
+        {
+            var service = CreateService(app);
+            using var stream = BuildWorkbook(
+                new object[] { "01/01/2026", "DC-1", "INV-1", customerCode, "Gloves", 5, "", "No Such Purpose", "", "", "" }
+            );
+
+            var result = await service.ImportInwardAsync(stream, "import.xlsx");
+
+            Assert.False(result.Success);
+            Assert.Contains(result.Errors, e => e.Message.Contains("Purpose 'No Such Purpose' not found"));
         }
     }
 }
