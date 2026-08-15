@@ -57,7 +57,8 @@ Purpose | Remarks | Received By | Remarks`
 A DC dispatches available stock to a customer.
 
 1. Go to **Dispatch Challans > + New Challan**.
-2. Fill the header (DC number, date, customer, references).
+2. Fill the header (DC number, date, customer, references, invoice no, payment status,
+   mode of dispatch, POD no).
 3. In **Available Stock**, search, select an item, set quantity and — for serial-tracked
    items — tick the exact serials, then **+ Add to Challan**.
 4. Repeat for each line, then **Save Challan**.
@@ -69,6 +70,27 @@ Rules:
 - Serial-tracked items require exactly as many serials as the quantity.
 - A DC is **immutable** after generation. To change it, **Cancel** the DC (stock is
   returned automatically) and create a new one.
+
+Actions on the list: **PDF**, **Cancel**, **Delete**, **Template** (Excel import layout),
+**Import**, **Export**.
+
+### Excel import
+
+Use the **Template** to build a sheet. Headers:
+`DATE | D.C No | Invoice No | Items Sent To | Equipment | Qty | Serial No | Purpose |
+Payment Status | Mode of Dispatch | POD No | Remarks`
+
+- Rows sharing the same header (date, D.C No, invoice, customer, purpose) form a single
+  dispatch challan.
+- **Items Sent To** is matched against the customer master first, then the vendor
+  master; a dispatch must go to a customer.
+- **Equipment** is matched against the item master; a serial number requires a master
+  item (free-text equipment is allowed without one).
+- **Purpose** must match an existing purpose; leave blank if not applicable.
+- **Payment Status**, **Mode of Dispatch** and **POD No** are stored as free text.
+- Serial numbers already marked as dispatched are rejected; duplicate serials (in-file)
+  are rejected.
+- The importer reports every rejected row with a reason.
 
 ## Search
 

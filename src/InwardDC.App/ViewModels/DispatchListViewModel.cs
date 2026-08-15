@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -155,6 +156,34 @@ public partial class DispatchListViewModel : ViewModelBase
             _dialogs.ShowError(result.Message);
 
         await RefreshAsync();
+    }
+
+    [RelayCommand]
+    private async Task TemplateAsync()
+    {
+        var path = _dialogs.PickSaveFile("Excel Workbook|*.xlsx", "DispatchImportTemplate.xlsx");
+        if (path is null) return;
+
+        await using var stream = await _excel.CreateDispatchImportTemplateAsync();
+        await using var fs = File.Create(path);
+        await stream.CopyToAsync(fs);
+
+        _dialogs.ShowInfo($"Dispatch import template saved to:\n{path}");
+    }
+
+    [RelayCommand]
+    private async Task ImportAsync()
+    {
+        var path = _dialogs.PickOpenFile("Excel Workbook|*.xlsx");
+        if (path is null) return;
+
+        await RunAsync(async () =>
+        {
+            await using var stream = File.OpenRead(path);
+            var result = await _excel.ImportDispatchesAsync(stream, Path.GetFileName(path));
+            _dialogs.ShowInfo(result.Summary, "Import Result");
+            await RefreshAsync();
+        }, "Importing...");
     }
 
     [RelayCommand]

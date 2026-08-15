@@ -102,7 +102,11 @@ public class DispatchService : IDispatchService
             PurposeId = request.PurposeId,
             SourceInwardEntryId = request.SourceInwardEntryId,
             ReferenceChallanNo = request.ReferenceChallanNo.Trim(),
+            InvoiceNo = request.InvoiceNo.Trim(),
             TransportDetails = request.TransportDetails.Trim(),
+            PaymentStatus = request.PaymentStatus.Trim(),
+            ModeOfDispatch = request.ModeOfDispatch.Trim(),
+            PodNo = request.PodNo.Trim(),
             Remarks = request.Remarks.Trim(),
             Status = DispatchStatus.Generated
         };
@@ -373,7 +377,11 @@ public class DispatchService : IDispatchService
             SourceInwardEntryId = x.SourceInwardEntryId,
             SourceInwardNo = x.SourceInwardEntry?.InwardNo ?? string.Empty,
             ReferenceChallanNo = x.ReferenceChallanNo,
+            InvoiceNo = x.InvoiceNo,
             TransportDetails = x.TransportDetails,
+            PaymentStatus = x.PaymentStatus,
+            ModeOfDispatch = x.ModeOfDispatch,
+            PodNo = x.PodNo,
             Remarks = x.Remarks,
             Status = x.Status,
             TotalQuantity = x.TotalQuantity,

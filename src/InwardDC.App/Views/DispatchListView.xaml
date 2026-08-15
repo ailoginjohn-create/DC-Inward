@@ -9,6 +9,8 @@
                 <Button Content="Cancel" Style="{StaticResource ToolbarButton}" Command="{Binding CancelCommand}" CommandParameter="{Binding SelectedItem}" />
                 <Button Content="Delete" Style="{StaticResource ToolbarButton}" Command="{Binding DeleteCommand}" CommandParameter="{Binding SelectedItem}" />
                 <Separator Width="1" Height="24" Background="#CCCCCC" Margin="8,0" />
+                <Button Content="Template" Style="{StaticResource ToolbarButton}" Command="{Binding TemplateCommand}" />
+                <Button Content="Import" Style="{StaticResource ToolbarButton}" Command="{Binding ImportCommand}" />
                 <Button Content="Export" Style="{StaticResource ToolbarButton}" Command="{Binding ExportCommand}" />
             </StackPanel>
         </Border>
@@ -39,7 +41,9 @@
                 <DataGridTextColumn Header="DC No" Binding="{Binding DcNo}" Width="130" />
                 <DataGridTextColumn Header="Date" Binding="{Binding DcDate, StringFormat=d}" Width="90" />
                 <DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="*" />
-                <DataGridTextColumn Header="Reference Challan" Binding="{Binding ReferenceChallanNo}" Width="120" />
+                <DataGridTextColumn Header="Invoice No" Binding="{Binding InvoiceNo}" Width="100" />
+                <DataGridTextColumn Header="Payment" Binding="{Binding PaymentStatus}" Width="90" />
+                <DataGridTextColumn Header="Mode" Binding="{Binding ModeOfDispatch}" Width="90" />
                 <DataGridTextColumn Header="Qty" Binding="{Binding TotalQuantity}" Width="60" />
                 <DataGridTextColumn Header="Amount" Binding="{Binding TotalAmount, StringFormat=N2}" Width="100" />
                 <DataGridTextColumn Header="Status" Binding="{Binding StatusName}" Width="80" />

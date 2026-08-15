@@ -1,5 +1,5 @@
 {
-  "version": "1.0.5",
-  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.5/InwardDC.exe",
-  "notes": "New inward import template: DATE | D.C No | Invoice No | Items Received From | Name of Item | Qty | Serial No | Purpose | Remarks | Received By | Remarks. Items Received From matches the customer or vendor master; Purpose and Received By are now captured."
+  "version": "1.0.6",
+  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.6/InwardDC.exe",
+  "notes": "Dispatch Challan Excel import (DATE | D.C No | Invoice No | Items Sent To | Equipment | Qty | Serial No | Purpose | Payment Status | Mode of Dispatch | POD No | Remarks) plus new Invoice No, Payment Status, Mode of Dispatch and POD No fields. Inward item lines now accept a free-text item name without selecting a master item."
 }

@@ -56,7 +56,9 @@ public interface IDashboardService
 public interface IExcelService
 {
     Task<FileImportResult> ImportInwardAsync(Stream stream, string fileName, CancellationToken ct = default);
+    Task<FileImportResult> ImportDispatchesAsync(Stream stream, string fileName, CancellationToken ct = default);
     Task<Stream> CreateImportTemplateAsync(CancellationToken ct = default);
+    Task<Stream> CreateDispatchImportTemplateAsync(CancellationToken ct = default);
     Task<string> ExportInwardsAsync(InwardSearchFilter filter, string filePath, CancellationToken ct = default);
     Task<string> ExportDispatchesAsync(DispatchSearchFilter filter, string filePath, CancellationToken ct = default);
     Task<string> ExportReportAsync(string title, IReadOnlyList<ReportRowDto> rows, string filePath, CancellationToken ct = default);

@@ -32,7 +32,11 @@ public class DispatchDto
     public Guid? SourceInwardEntryId { get; set; }
     public string SourceInwardNo { get; set; } = string.Empty;
     public string ReferenceChallanNo { get; set; } = string.Empty;
+    public string InvoiceNo { get; set; } = string.Empty;
     public string TransportDetails { get; set; } = string.Empty;
+    public string PaymentStatus { get; set; } = string.Empty;
+    public string ModeOfDispatch { get; set; } = string.Empty;
+    public string PodNo { get; set; } = string.Empty;
     public string Remarks { get; set; } = string.Empty;
     public DispatchStatus Status { get; set; }
     public string StatusName => Status.ToString();
@@ -67,7 +71,11 @@ public class DispatchSaveRequest
     public Guid? PurposeId { get; set; }
     public Guid? SourceInwardEntryId { get; set; }
     public string ReferenceChallanNo { get; set; } = string.Empty;
+    public string InvoiceNo { get; set; } = string.Empty;
     public string TransportDetails { get; set; } = string.Empty;
+    public string PaymentStatus { get; set; } = string.Empty;
+    public string ModeOfDispatch { get; set; } = string.Empty;
+    public string PodNo { get; set; } = string.Empty;
     public string Remarks { get; set; } = string.Empty;
     public List<DispatchLineRequest> Items { get; set; } = new();
 }

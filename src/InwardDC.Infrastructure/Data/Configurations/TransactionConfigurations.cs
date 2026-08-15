@@ -93,7 +93,11 @@ public class TransactionConfigurations :
         builder.HasKey(x => x.Id);
         builder.Property(x => x.DcNo).HasMaxLength(32).IsRequired();
         builder.Property(x => x.ReferenceChallanNo).HasMaxLength(64);
+        builder.Property(x => x.InvoiceNo).HasMaxLength(64);
         builder.Property(x => x.TransportDetails).HasMaxLength(256);
+        builder.Property(x => x.PaymentStatus).HasMaxLength(64);
+        builder.Property(x => x.ModeOfDispatch).HasMaxLength(64);
+        builder.Property(x => x.PodNo).HasMaxLength(64);
         builder.Property(x => x.Remarks).HasMaxLength(1024);
         builder.Property(x => x.TotalQuantity).HasPrecision(18, 3);
         builder.Property(x => x.TotalAmount).HasPrecision(18, 2);

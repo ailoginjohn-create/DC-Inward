@@ -66,7 +66,11 @@ public partial class DispatchEditorViewModel : ViewModelBase
     [ObservableProperty] private DropdownItemDto? _customer;
     [ObservableProperty] private DropdownItemDto? _purpose;
     [ObservableProperty] private string _referenceChallanNo = string.Empty;
+    [ObservableProperty] private string _invoiceNo = string.Empty;
     [ObservableProperty] private string _transportDetails = string.Empty;
+    [ObservableProperty] private string _paymentStatus = string.Empty;
+    [ObservableProperty] private string _modeOfDispatch = string.Empty;
+    [ObservableProperty] private string _podNo = string.Empty;
     [ObservableProperty] private string _remarks = string.Empty;
     [ObservableProperty] private AvailableStockDto? _selectedStock;
     [ObservableProperty] private decimal _quantity = 1;
@@ -197,7 +201,11 @@ public partial class DispatchEditorViewModel : ViewModelBase
                 CustomerId = Customer?.Id ?? Guid.Empty,
                 PurposeId = Purpose?.Id,
                 ReferenceChallanNo = ReferenceChallanNo,
+                InvoiceNo = InvoiceNo,
                 TransportDetails = TransportDetails,
+                PaymentStatus = PaymentStatus,
+                ModeOfDispatch = ModeOfDispatch,
+                PodNo = PodNo,
                 Remarks = Remarks
             };
 

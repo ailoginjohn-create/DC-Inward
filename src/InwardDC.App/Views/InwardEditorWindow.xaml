@@ -96,12 +96,26 @@
                           HeadersVisibility="Column"
                           RowHeight="30">
                     <DataGrid.Columns>
-                        <DataGridComboBoxColumn Header="Master Item" Width="200"
-                                                ItemsSource="{Binding DataContext.MasterItems, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                SelectedValueBinding="{Binding ItemId, UpdateSourceTrigger=PropertyChanged}"
-                                                SelectedValuePath="Id"
-                                                DisplayMemberPath="DisplayName" />
-                        <DataGridTextColumn Header="Item Name" Width="*" Binding="{Binding ItemName, UpdateSourceTrigger=PropertyChanged}" />
+                        <DataGridTemplateColumn Header="Item (type or select)" Width="220">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ItemName}" VerticalAlignment="Center" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                            <DataGridTemplateColumn.CellEditingTemplate>
+                                <DataTemplate>
+                                    <ComboBox IsEditable="True"
+                                              StaysOpenOnEdit="True"
+                                              ItemsSource="{Binding DataContext.MasterItems, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                              SelectedValuePath="Id"
+                                              SelectedValue="{Binding ItemId, UpdateSourceTrigger=PropertyChanged}"
+                                              DisplayMemberPath="DisplayName"
+                                              Text="{Binding ItemName, UpdateSourceTrigger=PropertyChanged}"
+                                              SelectionChanged="MasterItemCombo_SelectionChanged"
+                                              KeyUp="MasterItemCombo_KeyUp" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellEditingTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Header="Make" Width="90" Binding="{Binding ItemMake, UpdateSourceTrigger=PropertyChanged}" />
                         <DataGridTextColumn Header="Model" Width="90" Binding="{Binding ItemModel, UpdateSourceTrigger=PropertyChanged}" />
                         <DataGridTextColumn Header="HSN" Width="90" Binding="{Binding HsnCode, UpdateSourceTrigger=PropertyChanged}" />

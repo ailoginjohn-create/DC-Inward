@@ -17,7 +17,11 @@ public class DispatchChallan : EntityBase
     public Guid? SourceInwardEntryId { get; set; }
     public InwardEntry? SourceInwardEntry { get; set; }
     public string ReferenceChallanNo { get; set; } = string.Empty;
+    public string InvoiceNo { get; set; } = string.Empty;
     public string TransportDetails { get; set; } = string.Empty;
+    public string PaymentStatus { get; set; } = string.Empty;
+    public string ModeOfDispatch { get; set; } = string.Empty;
+    public string PodNo { get; set; } = string.Empty;
     public string Remarks { get; set; } = string.Empty;
     public DispatchStatus Status { get; set; } = DispatchStatus.Draft;
 

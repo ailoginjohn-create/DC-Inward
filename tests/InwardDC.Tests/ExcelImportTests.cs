@@ -90,7 +90,7 @@ public class ExcelImportTests
             Assert.Equal("Evaluation", entry.Purpose!.Name);
             Assert.Equal(2, entry.Items.Count);
             Assert.Equal(6, entry.TotalQuantity);
-            Assert.Equal("line remarks", entry.Items.First().Remarks);
+            Assert.Equal("line remarks", entry.Items.Single(i => i.ItemName == "Monitor").Remarks);
         }
     }
 
@@ -228,6 +228,171 @@ public class ExcelImportTests
 
             Assert.False(result.Success);
             Assert.Contains(result.Errors, e => e.Message.Contains("Purpose 'No Such Purpose' not found"));
+        }
+    }
+
+    private static MemoryStream BuildDispatchWorkbook(params object[][] rows)
+    {
+        var stream = new MemoryStream();
+        using var wb = new XLWorkbook();
+        var ws = wb.Worksheets.Add("DispatchItems");
+        var headers = new[]
+        {
+            "DATE", "D.C No", "Invoice No", "Items Sent To", "Equipment",
+            "Qty", "Serial No", "Purpose", "Payment Status", "Mode of Dispatch",
+            "POD No", "Remarks"
+        };
+        for (int i = 0; i < headers.Length; i++)
+            ws.Cell(1, i + 1).Value = headers[i];
+
+        for (int r = 0; r < rows.Length; r++)
+            for (int c = 0; c < rows[r].Length; c++)
+                ws.Cell(r + 2, c + 1).Value = XLCellValue.FromObject(rows[r][c]);
+
+        wb.SaveAs(stream);
+        stream.Position = 0;
+        return stream;
+    }
+
+    [Fact]
+    public async Task ImportDispatchesAsync_CreatesDcsGroupingRowsByHeader()
+    {
+        var (app, customerCode) = await SeedMastersAsync();
+        using (app)
+        {
+            var service = CreateService(app);
+            using var stream = BuildDispatchWorkbook(
+                new object[] { "01/01/2026", "DC-1001", "INV-900", customerCode, "Monitor", 1, "M-0001", "Evaluation", "Pending", "By Hand", "POD-001", "dispatch remarks" },
+                new object[] { "01/01/2026", "DC-1001", "INV-900", customerCode, "Gloves", 5, "", "Evaluation", "Pending", "By Hand", "POD-001", "" }
+            );
+
+            var result = await service.ImportDispatchesAsync(stream, "import.xlsx");
+
+            Assert.True(result.Success, string.Join("; ", result.Errors.Select(e => e.Message)));
+            Assert.Empty(result.Errors);
+            Assert.Equal(2, result.ImportedRows);
+            Assert.Equal(1, result.CreatedEntries);  // same header -> single DC
+
+            var dcs = await app.Uow.DCs.GetByPeriodDetailedAsync(new DateTime(2026, 1, 1), new DateTime(2026, 1, 2));
+            var dc = Assert.Single(dcs);
+            Assert.Equal("DC-1001", dc.DcNo);
+            Assert.Equal("INV-900", dc.InvoiceNo);
+            Assert.Equal("Pending", dc.PaymentStatus);
+            Assert.Equal("By Hand", dc.ModeOfDispatch);
+            Assert.Equal("POD-001", dc.PodNo);
+            Assert.NotNull(dc.Purpose);
+            Assert.Equal("Evaluation", dc.Purpose!.Name);
+            Assert.Equal(2, dc.Items.Count);
+            Assert.Equal(6, dc.TotalQuantity);
+            Assert.Equal("dispatch remarks", dc.Items.Single(i => i.ItemName == "Monitor").Remarks);
+        }
+    }
+
+    [Fact]
+    public async Task ImportDispatchesAsync_RejectsDuplicateSerialWithinFile()
+    {
+        var (app, customerCode) = await SeedMastersAsync();
+        using (app)
+        {
+            var service = CreateService(app);
+            using var stream = BuildDispatchWorkbook(
+                new object[] { "01/01/2026", "DC-1", "INV-1", customerCode, "Monitor", 1, "DUP-1", "Evaluation", "", "", "", "" },
+                new object[] { "02/01/2026", "DC-2", "INV-2", customerCode, "Monitor", 1, "DUP-1", "Evaluation", "", "", "", "" }
+            );
+
+            var result = await service.ImportDispatchesAsync(stream, "import.xlsx");
+
+            Assert.False(result.Success);
+            Assert.Contains(result.Errors, e => e.Message.Contains("Duplicate serial 'DUP-1'"));
+        }
+    }
+
+    [Fact]
+    public async Task ImportDispatchesAsync_PartyNotFound_ReportsError()
+    {
+        var app = new TestApp();
+        using (app)
+        {
+            var service = CreateService(app);
+            using var stream = BuildDispatchWorkbook(
+                new object[] { "01/01/2026", "DC-1", "INV-1", "Nobody Here", "Gloves", 5, "", "", "", "", "", "" }
+            );
+
+            var result = await service.ImportDispatchesAsync(stream, "import.xlsx");
+
+            Assert.False(result.Success);
+            Assert.Contains(result.Errors, e => e.Message.Contains("not found in customer or vendor master"));
+        }
+    }
+
+    [Fact]
+    public async Task ImportDispatchesAsync_VendorParty_ReportsError()
+    {
+        var app = new TestApp();
+        using (app)
+        {
+            await app.Uow.Vendors.AddAsync(new Vendor
+            {
+                Code = "VEN-001",
+                Name = "Supply Co",
+                IsActive = true
+            });
+            await app.Uow.SaveChangesAsync();
+
+            var service = CreateService(app);
+            using var stream = BuildDispatchWorkbook(
+                new object[] { "01/01/2026", "DC-1", "INV-1", "VEN-001", "Gloves", 5, "", "", "", "", "", "" }
+            );
+
+            var result = await service.ImportDispatchesAsync(stream, "import.xlsx");
+
+            Assert.False(result.Success);
+            Assert.Contains(result.Errors, e => e.Message.Contains("dispatches must go to a customer"));
+        }
+    }
+
+    [Fact]
+    public async Task ImportDispatchesAsync_SerialAlreadyDispatched_ReportsError()
+    {
+        var (app, customerCode) = await SeedMastersAsync();
+        using (app)
+        {
+            var service = CreateService(app);
+            using (var first = BuildDispatchWorkbook(new object[] { "01/01/2026", "DC-1", "INV-1", customerCode, "Monitor", 1, "DB-1", "Evaluation", "", "", "", "" }))
+            {
+                var ok = await service.ImportDispatchesAsync(first, "import.xlsx");
+                Assert.True(ok.Success);
+            }
+
+            using (var second = BuildDispatchWorkbook(new object[] { "02/01/2026", "DC-2", "INV-2", customerCode, "Monitor", 1, "DB-1", "Evaluation", "", "", "", "" }))
+            {
+                var result = await service.ImportDispatchesAsync(second, "import2.xlsx");
+                Assert.False(result.Success);
+                Assert.Contains(result.Errors, e => e.Message.Contains("already dispatched"));
+            }
+        }
+    }
+
+    [Fact]
+    public async Task CreateDispatchImportTemplateAsync_ProducesWorkbookWithHeaders()
+    {
+        var app = new TestApp();
+        using (app)
+        {
+            var service = CreateService(app);
+            using var stream = await service.CreateDispatchImportTemplateAsync();
+
+            Assert.True(stream.Length > 0, "Template stream must not be empty.");
+
+            using var wb = new XLWorkbook(stream);
+            var ws = wb.Worksheets.First();
+            Assert.Equal("DispatchItems", ws.Name);
+            Assert.Equal("DATE", ws.Cell(1, 1).GetString());
+            Assert.Equal("Items Sent To", ws.Cell(1, 4).GetString());
+            Assert.Equal("Equipment", ws.Cell(1, 5).GetString());
+            Assert.Equal("Payment Status", ws.Cell(1, 9).GetString());
+            Assert.Equal("Mode of Dispatch", ws.Cell(1, 10).GetString());
+            Assert.Equal("POD No", ws.Cell(1, 11).GetString());
         }
     }
 }

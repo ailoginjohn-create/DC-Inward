@@ -70,7 +70,8 @@ inward line, locks availability), `InwardEntryId`, `Status` (`InStock` / `Dispat
 | DcDate | |
 | CustomerId | FK, required |
 | SourceInwardEntryId | FK, nullable (multi-inward DCs leave this null) |
-| ReferenceChallanNo, TransportDetails, Remarks | |
+| ReferenceChallanNo, InvoiceNo, TransportDetails, Remarks | |
+| PaymentStatus, ModeOfDispatch, PodNo | free text (set from manual entry or Excel import) |
 | Status | `Draft` / `Generated` / `Cancelled` |
 | TotalQuantity, TotalAmount | denormalized |
 

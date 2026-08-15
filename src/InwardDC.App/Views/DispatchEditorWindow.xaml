@@ -44,12 +44,16 @@
                     <TextBox Text="{Binding DcNo, Mode=OneWay}" IsReadOnly="True" Background="#EEF0F4" />
                     <TextBlock Text="Reference Challan No" Margin="0,6,0,0" />
                     <TextBox Text="{Binding ReferenceChallanNo}" />
+                    <TextBlock Text="Invoice No" Margin="0,6,0,0" />
+                    <TextBox Text="{Binding InvoiceNo}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Margin="0,0,8,0">
                     <TextBlock Text="DC Date" />
                     <DatePicker SelectedDate="{Binding DcDate}" />
                     <TextBlock Text="Transport Details" Margin="0,6,0,0" />
                     <TextBox Text="{Binding TransportDetails}" Height="60" AcceptsReturn="True" TextWrapping="Wrap" />
+                    <TextBlock Text="Payment Status" Margin="0,6,0,0" />
+                    <TextBox Text="{Binding PaymentStatus}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Margin="0,0,8,0">
                     <TextBlock Text="Customer" />
@@ -58,11 +62,15 @@
                     <TextBlock Text="Purpose" Margin="0,6,0,0" />
                     <ComboBox ItemsSource="{Binding Purposes}" SelectedItem="{Binding Purpose}"
                               DisplayMemberPath="Name" />
-                    <TextBlock Text="Remarks" Margin="0,6,0,0" />
-                    <TextBox Text="{Binding Remarks}" Height="60" AcceptsReturn="True" TextWrapping="Wrap" />
+                    <TextBlock Text="Mode of Dispatch" Margin="0,6,0,0" />
+                    <TextBox Text="{Binding ModeOfDispatch}" />
+                    <TextBlock Text="POD No" Margin="0,6,0,0" />
+                    <TextBox Text="{Binding PodNo}" />
                 </StackPanel>
                 <StackPanel Grid.Column="3">
-                    <TextBlock Text="Total Amount" FontWeight="Bold" />
+                    <TextBlock Text="Remarks" />
+                    <TextBox Text="{Binding Remarks}" Height="60" AcceptsReturn="True" TextWrapping="Wrap" />
+                    <TextBlock Text="Total Amount" FontWeight="Bold" Margin="0,8,0,0" />
                     <TextBlock Text="{Binding TotalAmount, StringFormat=N2}" FontSize="24" FontWeight="Bold"
                                Foreground="#1F4E78" />
                 </StackPanel>
