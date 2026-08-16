@@ -1,5 +1,6 @@
 using InwardDC.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace InwardDC.Infrastructure.Data;
@@ -25,6 +26,25 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(x => x.Phone).HasMaxLength(32);
         builder.Property(x => x.PasswordHash).HasMaxLength(512).IsRequired();
         builder.Property(x => x.PasswordSalt).HasMaxLength(128).IsRequired();
+
+        // Module access keys stored as a comma-separated string; NULL means
+        // unrestricted (all modules), empty string means only the Dashboard.
+        var modules = builder.Property(x => x.AllowedModules)
+            .HasColumnType("TEXT")
+            .HasMaxLength(1024)
+            .HasConversion(
+                v => v == null ? null : string.Join(',', v),
+                v => v == null
+                    ? null
+                    : v.Length == 0
+                        ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                        : v.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .ToHashSet(StringComparer.OrdinalIgnoreCase));
+
+        modules.Metadata.SetValueComparer(new ValueComparer<HashSet<string>>(
+            (a, b) => a == b || (a != null && b != null && a.SetEquals(b)),
+            v => v == null ? 0 : string.Concat(v.OrderBy(x => x)).GetHashCode(StringComparison.OrdinalIgnoreCase),
+            v => new HashSet<string>(v, StringComparer.OrdinalIgnoreCase)));
 
         var index = builder.HasIndex(x => x.UserName).IsUnique();
         if (_deletedFilter is not null)

@@ -43,6 +43,7 @@ public class UserDto
     public bool MustChangePassword { get; set; }
     public DateTime? LastLoginOn { get; set; }
     public DateTime CreatedOn { get; set; }
+    public IReadOnlyCollection<string>? AllowedModules { get; set; }
     public bool IsAdmin => Role == UserRole.Admin;
 }
 
@@ -56,6 +57,7 @@ public class CreateUserRequest
     public string Password { get; set; } = string.Empty;
     public string ConfirmPassword { get; set; } = string.Empty;
     public bool MustChangePassword { get; set; } = true;
+    public IReadOnlyCollection<string>? AllowedModules { get; set; }
 }
 
 public class UpdateUserRequest
@@ -66,4 +68,5 @@ public class UpdateUserRequest
     public string Phone { get; set; } = string.Empty;
     public UserRole Role { get; set; }
     public bool IsActive { get; set; }
+    public IReadOnlyCollection<string>? AllowedModules { get; set; }
 }

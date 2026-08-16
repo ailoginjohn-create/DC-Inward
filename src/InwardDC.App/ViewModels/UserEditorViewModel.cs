@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using InwardDC.Application.Common;
 using InwardDC.Application.DTOs;
 using InwardDC.Application.Interfaces;
+using InwardDC.Domain.Catalog;
 using InwardDC.Domain.Enums;
 using InwardDC.Domain.Exceptions;
 
@@ -18,9 +19,14 @@ public partial class UserEditorViewModel : EditorViewModelBase
     {
         _users = users;
         Title = "User";
+        foreach (var module in Modules)
+            module.IsChecked = true;
     }
 
     public IReadOnlyList<UserRole> Roles => Enum.GetValues<UserRole>();
+
+    public IReadOnlyList<ModuleOption> Modules { get; } =
+        AppModule.Restrictable.Select(m => new ModuleOption(m.Key, m.Label)).ToList();
 
     [ObservableProperty] private string _userName = string.Empty;
     [ObservableProperty] private string _fullName = string.Empty;
@@ -32,6 +38,9 @@ public partial class UserEditorViewModel : EditorViewModelBase
     [ObservableProperty] private string _password = string.Empty;
     [ObservableProperty] private string _confirmPassword = string.Empty;
     [ObservableProperty] private string _saveText = "Create";
+    [ObservableProperty] private bool _modulesEnabled = true;
+
+    partial void OnRoleChanged(UserRole value) => UpdateModuleSection();
 
     public void SetPassword(string value) => Password = value;
     public void SetConfirmPassword(string value) => ConfirmPassword = value;
@@ -57,11 +66,49 @@ public partial class UserEditorViewModel : EditorViewModelBase
             Role = dto.Role;
             IsActive = dto.IsActive;
             SaveText = "Update";
+            LoadModules(dto.AllowedModules);
         }
         else
         {
             IsNew = true;
+            LoadModules(null);
         }
+    }
+
+    private void LoadModules(IReadOnlyCollection<string>? allowedModules)
+    {
+        if (allowedModules is null)
+        {
+            foreach (var module in Modules)
+                module.IsChecked = true;
+        }
+        else
+        {
+            var allowed = allowedModules.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            foreach (var module in Modules)
+                module.IsChecked = allowed.Contains(module.Key);
+        }
+
+        UpdateModuleSection();
+    }
+
+    private void UpdateModuleSection()
+    {
+        ModulesEnabled = Role != UserRole.Admin;
+        if (!ModulesEnabled)
+        {
+            foreach (var module in Modules)
+                module.IsChecked = true;
+        }
+    }
+
+    private IReadOnlyCollection<string>? SelectedModules()
+    {
+        if (!ModulesEnabled)
+            return null;
+
+        var selected = Modules.Where(m => m.IsChecked).Select(m => m.Key).ToList();
+        return selected.Count == Modules.Count ? null : selected;
     }
 
     [RelayCommand]
@@ -87,7 +134,8 @@ public partial class UserEditorViewModel : EditorViewModelBase
                     Phone = Phone,
                     Role = Role,
                     Password = Password,
-                    ConfirmPassword = ConfirmPassword
+                    ConfirmPassword = ConfirmPassword,
+                    AllowedModules = SelectedModules()
                 });
             }
             else
@@ -99,7 +147,8 @@ public partial class UserEditorViewModel : EditorViewModelBase
                     Email = Email,
                     Phone = Phone,
                     Role = Role,
-                    IsActive = IsActive
+                    IsActive = IsActive,
+                    AllowedModules = SelectedModules()
                 });
             }
 

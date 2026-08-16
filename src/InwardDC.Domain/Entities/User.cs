@@ -16,4 +16,11 @@ public class User : EntityBase
     public bool MustChangePassword { get; set; }
     public DateTime? LastLoginOn { get; set; }
     public string LastLoginIp { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Module keys the user may access. Null means unrestricted (all modules);
+    /// an empty set means only the Dashboard. Ignored for administrators, who always
+    /// have access to every module.
+    /// </summary>
+    public HashSet<string>? AllowedModules { get; set; }
 }

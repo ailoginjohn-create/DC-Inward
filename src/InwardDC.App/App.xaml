@@ -8,6 +8,7 @@
     <Application.Resources>
         <conv:InverseBoolConverter x:Key="InverseBoolConverter" />
         <conv:BoolVisibilityConverter x:Key="BoolVisibilityConverter" />
+        <conv:InverseBoolVisibilityConverter x:Key="InverseBoolVisibilityConverter" />
 
         <DataTemplate DataType="{x:Type vm:DashboardViewModel}"><views:DashboardView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:InwardListViewModel}"><views:InwardListView /></DataTemplate>

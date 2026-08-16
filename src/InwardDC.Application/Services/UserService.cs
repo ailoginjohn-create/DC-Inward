@@ -1,6 +1,7 @@
 using InwardDC.Application.Common;
 using InwardDC.Application.DTOs;
 using InwardDC.Application.Interfaces;
+using InwardDC.Domain.Catalog;
 using InwardDC.Domain.Entities;
 using InwardDC.Domain.Enums;
 using InwardDC.Domain.Exceptions;
@@ -15,6 +16,9 @@ namespace InwardDC.Application.Services;
 public class UserService : IUserService
 {
     private const string DefaultPassword = "Admin@123";
+
+    private static readonly IReadOnlyCollection<string> ModuleKeys =
+        AppModule.All.Select(m => m.Key).ToList();
 
     private readonly IUnitOfWork _uow;
     private readonly ICurrentUserService _currentUser;
@@ -80,6 +84,7 @@ public class UserService : IUserService
             Role = request.Role,
             IsActive = true,
             MustChangePassword = request.MustChangePassword,
+            AllowedModules = NormalizeModules(request.Role, request.AllowedModules),
             PasswordHash = hash,
             PasswordSalt = salt
         };
@@ -106,6 +111,7 @@ public class UserService : IUserService
         user.Phone = request.Phone.Trim();
         user.Role = request.Role;
         user.IsActive = request.IsActive;
+        user.AllowedModules = NormalizeModules(request.Role, request.AllowedModules);
 
         _uow.Users.Update(user);
         await _uow.SaveChangesAsync(ct);
@@ -237,6 +243,26 @@ public class UserService : IUserService
         IsActive = u.IsActive,
         MustChangePassword = u.MustChangePassword,
         LastLoginOn = u.LastLoginOn,
-        CreatedOn = u.CreatedOn
+        CreatedOn = u.CreatedOn,
+        AllowedModules = u.AllowedModules
     };
+
+    /// <summary>
+    /// Administrators are never restricted. For other roles, keeps only module keys
+    /// from the catalog (unknown keys dropped) and preserves null (unrestricted) vs.
+    /// empty (Dashboard only).
+    /// </summary>
+    private static HashSet<string>? NormalizeModules(UserRole role, IReadOnlyCollection<string>? modules)
+    {
+        if (role == UserRole.Admin)
+            return null;
+
+        if (modules is null)
+            return null;
+
+        return modules
+            .Where(m => ModuleKeys.Contains(m, StringComparer.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
 }

@@ -1,12 +1,14 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using InwardDC.App.Services;
 using InwardDC.Application.Common;
+using InwardDC.Domain.Catalog;
 
 namespace InwardDC.App.ViewModels;
 
 /// <summary>A single entry in the left navigation rail.</summary>
-public sealed record NavItem(string Label, Type ViewModelType, bool RequiresAdmin = false);
+public sealed record NavItem(string Label, Type ViewModelType, string ModuleKey, bool RequiresAdmin = false);
 
 public partial class ShellViewModel : ViewModelBase
 {
@@ -20,15 +22,17 @@ public partial class ShellViewModel : ViewModelBase
         _dialogs = dialogs;
         Title = "Inward & DC";
         UserDisplay = $"{currentUser.FullName} ({currentUser.UserName})";
-        NavItems = BuildNavItems();
 
-        // Land on the dashboard.
-        NavigateTo(NavItems[0]);
+        RefreshNavItems();
     }
 
     public event Action? SignOutRequested;
 
-    public IReadOnlyList<NavItem> NavItems { get; }
+    /// <summary>Every module regardless of the signed-in user's permissions.</summary>
+    public IReadOnlyList<NavItem> AllNavItems { get; } = BuildAllNavItems();
+
+    /// <summary>The modules the signed-in user may open, in navigation order.</summary>
+    public ObservableCollection<NavItem> NavItems { get; } = new();
 
     [ObservableProperty]
     private string _userDisplay = string.Empty;
@@ -48,6 +52,20 @@ public partial class ShellViewModel : ViewModelBase
             NavigateTo(value);
     }
 
+    /// <summary>
+    /// Rebuilds <see cref="NavItems"/> from the signed-in user's module access and
+    /// returns the shell to the Dashboard. Called when the shell opens so sign-outs
+    /// followed by a different login show the correct set of modules.
+    /// </summary>
+    public void RefreshNavItems()
+    {
+        NavItems.Clear();
+        foreach (var item in AllNavItems.Where(i => CurrentUser.CanAccessModule(i.ModuleKey)))
+            NavItems.Add(item);
+
+        SelectedNavItem = NavItems.Count > 0 ? NavItems[0] : null;
+    }
+
     [RelayCommand]
     private void Navigate(NavItem? item)
     {
@@ -64,6 +82,12 @@ public partial class ShellViewModel : ViewModelBase
 
     private void NavigateTo(NavItem item)
     {
+        if (!CurrentUser.CanAccessModule(item.ModuleKey))
+        {
+            _dialogs.ShowWarning("You do not have access to this module.");
+            return;
+        }
+
         if (item.RequiresAdmin && !IsAdmin)
         {
             _dialogs.ShowWarning("This module is restricted to administrators.");
@@ -79,21 +103,26 @@ public partial class ShellViewModel : ViewModelBase
         }
     }
 
-    private List<NavItem> BuildNavItems() => new()
+    private static readonly Dictionary<string, Type> ModuleViewModels = new()
     {
-        new("Dashboard", typeof(DashboardViewModel)),
-        new("Inward", typeof(InwardListViewModel)),
-        new("Dispatch Challans", typeof(DispatchListViewModel)),
-        new("Customers", typeof(CustomersViewModel)),
-        new("Vendors", typeof(VendorsViewModel)),
-        new("Items", typeof(ItemsViewModel)),
-        new("Item Categories", typeof(ItemCategoriesViewModel)),
-        new("Purposes", typeof(PurposesViewModel)),
-        new("Search", typeof(SearchViewModel)),
-        new("Reports", typeof(ReportsViewModel)),
-        new("Users", typeof(UsersViewModel), RequiresAdmin: true),
-        new("Company Settings", typeof(SettingsViewModel)),
-        new("Backup & Restore", typeof(BackupViewModel)),
-        new("Audit Log", typeof(AuditViewModel))
+        [AppModule.Dashboard.Key] = typeof(DashboardViewModel),
+        [AppModule.Inward.Key] = typeof(InwardListViewModel),
+        [AppModule.Dispatch.Key] = typeof(DispatchListViewModel),
+        [AppModule.Customers.Key] = typeof(CustomersViewModel),
+        [AppModule.Vendors.Key] = typeof(VendorsViewModel),
+        [AppModule.Items.Key] = typeof(ItemsViewModel),
+        [AppModule.ItemCategories.Key] = typeof(ItemCategoriesViewModel),
+        [AppModule.Purposes.Key] = typeof(PurposesViewModel),
+        [AppModule.Search.Key] = typeof(SearchViewModel),
+        [AppModule.Reports.Key] = typeof(ReportsViewModel),
+        [AppModule.Users.Key] = typeof(UsersViewModel),
+        [AppModule.Settings.Key] = typeof(SettingsViewModel),
+        [AppModule.Backup.Key] = typeof(BackupViewModel),
+        [AppModule.Audit.Key] = typeof(AuditViewModel)
     };
+
+    private static List<NavItem> BuildAllNavItems() =>
+        AppModule.All
+            .Select(m => new NavItem(m.Label, ModuleViewModels[m.Key], m.Key, RequiresAdmin: m.AdminOnly))
+            .ToList();
 }

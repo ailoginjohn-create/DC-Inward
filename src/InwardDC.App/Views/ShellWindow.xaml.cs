@@ -7,9 +7,12 @@ namespace InwardDC.App.Views;
 
 public partial class ShellWindow : Window
 {
+    private readonly ShellViewModel _viewModel;
+
     public ShellWindow(ShellViewModel viewModel)
     {
         InitializeComponent();
+        _viewModel = viewModel;
         DataContext = viewModel;
         viewModel.SignOutRequested += OnSignOutRequested;
         Loaded += OnLoaded;
@@ -26,6 +29,10 @@ public partial class ShellWindow : Window
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         Loaded -= OnLoaded;
+
+        // Rebuild nav modules in case a different user signed in since the shell
+        // ViewModel was first created (the ViewModel is a singleton).
+        _viewModel.RefreshNavItems();
 
         UpdateInfo? info = null;
         try

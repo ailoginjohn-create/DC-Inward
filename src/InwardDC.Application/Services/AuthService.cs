@@ -103,6 +103,7 @@ public class AuthService : IAuthService
         IsActive = u.IsActive,
         MustChangePassword = u.MustChangePassword,
         LastLoginOn = u.LastLoginOn,
-        CreatedOn = u.CreatedOn
+        CreatedOn = u.CreatedOn,
+        AllowedModules = u.AllowedModules
     };
 }
