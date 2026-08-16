@@ -1,5 +1,5 @@
 {
-  "version": "1.0.6",
-  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.6/InwardDC.exe",
-  "notes": "Dispatch Challan Excel import (DATE | D.C No | Invoice No | Items Sent To | Equipment | Qty | Serial No | Purpose | Payment Status | Mode of Dispatch | POD No | Remarks) plus new Invoice No, Payment Status, Mode of Dispatch and POD No fields. Inward item lines now accept a free-text item name without selecting a master item."
+  "version": "1.0.7",
+  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.7/InwardDC.exe",
+  "notes": "Per-user module access restrictions: when creating or editing a user you can now enable/disable which application modules the user can open. Disabled modules are hidden from that user's navigation (Dashboard always available); administrators keep access to everything. Existing users are unaffected until you restrict them."
 }
