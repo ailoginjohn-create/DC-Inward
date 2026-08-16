@@ -71,7 +71,7 @@
                     <TextBlock Text="Remarks" />
                     <TextBox Text="{Binding Remarks}" Height="60" AcceptsReturn="True" TextWrapping="Wrap" />
                     <TextBlock Text="Total Amount" FontWeight="Bold" Margin="0,8,0,0" />
-                    <TextBlock Text="{Binding TotalAmount, StringFormat=N2}" FontSize="24" FontWeight="Bold"
+                    <TextBlock Text="{Binding TotalAmount, StringFormat={}{0:₹#,##0.00}}" FontSize="24" FontWeight="Bold"
                                Foreground="#1F4E78" />
                 </StackPanel>
             </Grid>
@@ -103,7 +103,7 @@
                                 <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="80" />
                                 <DataGridTextColumn Header="Inward" Binding="{Binding InwardNo}" Width="90" />
                                 <DataGridTextColumn Header="Available" Binding="{Binding AvailableQuantity}" Width="70" />
-                                <DataGridTextColumn Header="Rate" Binding="{Binding Rate, StringFormat=N2}" Width="80" />
+                                <DataGridTextColumn Header="Rate" Binding="{Binding Rate, StringFormat={}{0:₹#,##0.00}}" Width="80" />
                             </DataGrid.Columns>
                         </DataGrid>
                         <Border Grid.Column="1" Margin="8,0,0,0" Background="#EEF3F9" Padding="6">
@@ -134,8 +134,8 @@
                     <DataGridTextColumn Header="Model" Binding="{Binding ItemModel}" Width="80" />
                     <DataGridTextColumn Header="Inward" Binding="{Binding InwardNo}" Width="90" />
                     <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="60" />
-                    <DataGridTextColumn Header="Rate" Binding="{Binding Rate, StringFormat=N2}" Width="80" />
-                    <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=N2}" Width="90" />
+                    <DataGridTextColumn Header="Rate" Binding="{Binding Rate, StringFormat={}{0:₹#,##0.00}}" Width="80" />
+                    <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat={}{0:₹#,##0.00}}" Width="90" />
                     <DataGridTextColumn Header="Serials" Binding="{Binding SerialDisplay}" Width="160" />
                     <DataGridTemplateColumn Header="" Width="60">
                         <DataGridTemplateColumn.CellTemplate>

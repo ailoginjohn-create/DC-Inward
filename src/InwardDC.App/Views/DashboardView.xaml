@@ -11,10 +11,10 @@
                     <StackPanel><TextBlock Text="Inward Entries" Foreground="#888888" /><TextBlock Text="{Binding Stats.TotalInwardEntries}" Style="{StaticResource StatValue}" /></StackPanel>
                 </Border>
                 <Border Style="{StaticResource StatCard}">
-                    <StackPanel><TextBlock Text="This Month (INW)" Foreground="#888888" /><TextBlock Text="{Binding Stats.InwardThisMonth}" Style="{StaticResource StatValue}" /><TextBlock Text="{Binding Stats.InwardAmountThisMonth, StringFormat=C}" Foreground="#1F4E78" /></StackPanel>
+                    <StackPanel><TextBlock Text="This Month (INW)" Foreground="#888888" /><TextBlock Text="{Binding Stats.InwardThisMonth}" Style="{StaticResource StatValue}" /><TextBlock Text="{Binding Stats.InwardAmountThisMonth, StringFormat={}{0:₹#,##0.00}}" Foreground="#1F4E78" /></StackPanel>
                 </Border>
                 <Border Style="{StaticResource StatCard}">
-                    <StackPanel><TextBlock Text="Dispatch Challans" Foreground="#888888" /><TextBlock Text="{Binding Stats.TotalDcs}" Style="{StaticResource StatValue}" /><TextBlock Text="{Binding Stats.DcAmountThisMonth, StringFormat=C}" Foreground="#1F4E78" /></StackPanel>
+                    <StackPanel><TextBlock Text="Dispatch Challans" Foreground="#888888" /><TextBlock Text="{Binding Stats.TotalDcs}" Style="{StaticResource StatValue}" /><TextBlock Text="{Binding Stats.DcAmountThisMonth, StringFormat={}{0:₹#,##0.00}}" Foreground="#1F4E78" /></StackPanel>
                 </Border>
                 <Border Style="{StaticResource StatCard}">
                     <StackPanel><TextBlock Text="Items In Stock" Foreground="#888888" /><TextBlock Text="{Binding Stats.ItemsInStock}" Style="{StaticResource StatValue}" /></StackPanel>
@@ -39,7 +39,7 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="No" Binding="{Binding Number}" Width="110" />
                                 <DataGridTextColumn Header="Party" Binding="{Binding Party}" Width="*" />
-                                <DataGridTextColumn Header="Amount" Binding="{Binding TotalAmount, StringFormat=C}" Width="90" />
+                                <DataGridTextColumn Header="Amount" Binding="{Binding TotalAmount, StringFormat={}{0:₹#,##0.00}}" Width="90" />
                                 <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="70" />
                             </DataGrid.Columns>
                         </DataGrid>
@@ -53,7 +53,7 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="No" Binding="{Binding Number}" Width="110" />
                                 <DataGridTextColumn Header="Party" Binding="{Binding Party}" Width="*" />
-                                <DataGridTextColumn Header="Amount" Binding="{Binding TotalAmount, StringFormat=C}" Width="90" />
+                                <DataGridTextColumn Header="Amount" Binding="{Binding TotalAmount, StringFormat={}{0:₹#,##0.00}}" Width="90" />
                                 <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="70" />
                             </DataGrid.Columns>
                         </DataGrid>

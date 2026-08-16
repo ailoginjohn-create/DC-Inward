@@ -45,7 +45,7 @@
                 <DataGridTextColumn Header="Payment" Binding="{Binding PaymentStatus}" Width="90" />
                 <DataGridTextColumn Header="Mode" Binding="{Binding ModeOfDispatch}" Width="90" />
                 <DataGridTextColumn Header="Qty" Binding="{Binding TotalQuantity}" Width="60" />
-                <DataGridTextColumn Header="Amount" Binding="{Binding TotalAmount, StringFormat=N2}" Width="100" />
+                <DataGridTextColumn Header="Amount" Binding="{Binding TotalAmount, StringFormat={}{0:₹#,##0.00}}" Width="100" />
                 <DataGridTextColumn Header="Status" Binding="{Binding StatusName}" Width="80" />
             </DataGrid.Columns>
         </DataGrid>

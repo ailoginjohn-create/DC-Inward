@@ -122,7 +122,7 @@
                         <DataGridTextColumn Header="Unit" Width="60" Binding="{Binding Unit, UpdateSourceTrigger=PropertyChanged}" />
                         <DataGridTextColumn Header="Qty" Width="60" Binding="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" />
                         <DataGridTextColumn Header="Rate" Width="80" Binding="{Binding Rate, UpdateSourceTrigger=PropertyChanged}" />
-                        <DataGridTextColumn Header="Amount" Width="90" Binding="{Binding Amount, Mode=OneWay}" IsReadOnly="True" />
+                        <DataGridTextColumn Header="Amount" Width="90" Binding="{Binding Amount, Mode=OneWay, StringFormat={}{0:₹#,##0.00}}" IsReadOnly="True" />
                         <DataGridTextColumn Header="Serials (one per line)" Width="160" Binding="{Binding SerialsText, UpdateSourceTrigger=PropertyChanged}" />
                         <DataGridTemplateColumn Header="" Width="50">
                             <DataGridTemplateColumn.CellTemplate>

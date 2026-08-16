@@ -39,9 +39,9 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=d}" Width="120" />
                     <DataGridTextColumn Header="Inward Count" Binding="{Binding InwardCount}" Width="100" />
-                    <DataGridTextColumn Header="Inward Amount" Binding="{Binding InwardAmount, StringFormat=N2}" Width="120" />
+                    <DataGridTextColumn Header="Inward Amount" Binding="{Binding InwardAmount, StringFormat={}{0:₹#,##0.00}}" Width="120" />
                     <DataGridTextColumn Header="DC Count" Binding="{Binding DcCount}" Width="100" />
-                    <DataGridTextColumn Header="DC Amount" Binding="{Binding DcAmount, StringFormat=N2}" Width="120" />
+                    <DataGridTextColumn Header="DC Amount" Binding="{Binding DcAmount, StringFormat={}{0:₹#,##0.00}}" Width="120" />
                 </DataGrid.Columns>
             </DataGrid>
 
@@ -59,9 +59,9 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Month" Binding="{Binding YearMonth}" Width="120" />
                     <DataGridTextColumn Header="Inward Count" Binding="{Binding InwardCount}" Width="100" />
-                    <DataGridTextColumn Header="Inward Amount" Binding="{Binding InwardAmount, StringFormat=N2}" Width="120" />
+                    <DataGridTextColumn Header="Inward Amount" Binding="{Binding InwardAmount, StringFormat={}{0:₹#,##0.00}}" Width="120" />
                     <DataGridTextColumn Header="DC Count" Binding="{Binding DcCount}" Width="100" />
-                    <DataGridTextColumn Header="DC Amount" Binding="{Binding DcAmount, StringFormat=N2}" Width="120" />
+                    <DataGridTextColumn Header="DC Amount" Binding="{Binding DcAmount, StringFormat={}{0:₹#,##0.00}}" Width="120" />
                 </DataGrid.Columns>
             </DataGrid>
 
@@ -79,9 +79,9 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Party" Binding="{Binding PartyName}" Width="*" />
                     <DataGridTextColumn Header="INW Units" Binding="{Binding InwardUnits}" Width="80" />
-                    <DataGridTextColumn Header="INW Amount" Binding="{Binding InwardAmount, StringFormat=N2}" Width="110" />
+                    <DataGridTextColumn Header="INW Amount" Binding="{Binding InwardAmount, StringFormat={}{0:₹#,##0.00}}" Width="110" />
                     <DataGridTextColumn Header="DC Units" Binding="{Binding DcUnits}" Width="80" />
-                    <DataGridTextColumn Header="DC Amount" Binding="{Binding DcAmount, StringFormat=N2}" Width="110" />
+                    <DataGridTextColumn Header="DC Amount" Binding="{Binding DcAmount, StringFormat={}{0:₹#,##0.00}}" Width="110" />
                 </DataGrid.Columns>
             </DataGrid>
 
@@ -101,7 +101,7 @@
                     <DataGridTextColumn Header="Make" Binding="{Binding Make}" Width="100" />
                     <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="100" />
                     <DataGridTextColumn Header="INW Units" Binding="{Binding InwardUnits}" Width="80" />
-                    <DataGridTextColumn Header="INW Amount" Binding="{Binding InwardAmount, StringFormat=N2}" Width="110" />
+                    <DataGridTextColumn Header="INW Amount" Binding="{Binding InwardAmount, StringFormat={}{0:₹#,##0.00}}" Width="110" />
                     <DataGridTextColumn Header="Dispatched" Binding="{Binding DispatchedUnits}" Width="80" />
                     <DataGridTextColumn Header="In Stock" Binding="{Binding InStock}" Width="80" />
                 </DataGrid.Columns>
@@ -128,8 +128,8 @@
                     <DataGridTextColumn Header="Item" Binding="{Binding ItemName}" Width="*" />
                     <DataGridTextColumn Header="Serial" Binding="{Binding SerialNo}" Width="100" />
                     <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="60" />
-                    <DataGridTextColumn Header="Rate" Binding="{Binding Rate, StringFormat=N2}" Width="80" />
-                    <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=N2}" Width="90" />
+                    <DataGridTextColumn Header="Rate" Binding="{Binding Rate, StringFormat={}{0:₹#,##0.00}}" Width="80" />
+                    <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat={}{0:₹#,##0.00}}" Width="90" />
                     <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80" />
                 </DataGrid.Columns>
             </DataGrid>

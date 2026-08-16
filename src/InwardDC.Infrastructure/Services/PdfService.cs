@@ -228,12 +228,12 @@ public class PdfService : IPdfService
                         table.Cell().Padding(3).Text(row.Party);
                         table.Cell().Padding(3).Text(row.ItemName);
                         table.Cell().Padding(3).Text(row.Quantity.ToString());
-                        table.Cell().Padding(3).Text(row.Rate.ToString("N2"));
-                        table.Cell().Padding(3).Text(row.Amount.ToString("N2"));
+                        table.Cell().Padding(3).Text(Inr(row.Rate));
+                        table.Cell().Padding(3).Text(Inr(row.Amount));
                     }
 
                     table.Cell().ColumnSpan(7).Padding(4).AlignRight().Text("TOTAL").SemiBold();
-                    table.Cell().Padding(4).Text(rows.Sum(r => r.Amount).ToString("N2")).SemiBold();
+                    table.Cell().Padding(4).Text(Inr(rows.Sum(r => r.Amount))).SemiBold();
                 });
 
                 page.Footer().AlignCenter().Text(x =>
@@ -321,15 +321,18 @@ public class PdfService : IPdfService
                 table.Cell().Padding(3).Text(line.Serial).FontSize(9);
                 table.Cell().Padding(3).Text(line.Quantity.ToString()).FontSize(9);
                 table.Cell().Padding(3).Text(line.Unit).FontSize(9);
-                table.Cell().Padding(3).Text(line.Amount.ToString("N2")).FontSize(9);
+                table.Cell().Padding(3).Text(Inr(line.Amount)).FontSize(9);
             }
 
             table.Cell().ColumnSpan(3).Padding(4).Text("TOTAL").SemiBold().FontSize(9);
             table.Cell().ColumnSpan(2).Padding(4).Text($"{totalQty}").SemiBold().FontSize(9);
             table.Cell().Padding(4).Text("").FontSize(9);
-            table.Cell().Padding(4).Text(totalAmount.ToString("N2")).SemiBold().FontSize(9);
+            table.Cell().Padding(4).Text(Inr(totalAmount)).SemiBold().FontSize(9);
         });
     }
+
+    /// <summary>Formats a monetary value with the Indian Rupee symbol, e.g. ₹1,234.50.</summary>
+    private static string Inr(decimal value) => $"₹{value:N2}";
 
     private static void SignatureBlock(IContainer c, string label)
     {

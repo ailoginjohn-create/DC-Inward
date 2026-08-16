@@ -760,6 +760,7 @@ public class ExcelService : IExcelService
         }
 
         ws.SheetView.FreezeRows(1);
+        ws.Column(9).Style.NumberFormat.Format = IndianRupeeFormat;
         ws.Columns().AdjustToContents();
         wb.SaveAs(filePath);
         return filePath;
@@ -787,6 +788,7 @@ public class ExcelService : IExcelService
         }
 
         ws.SheetView.FreezeRows(1);
+        ws.Column(11).Style.NumberFormat.Format = IndianRupeeFormat;
         ws.Columns().AdjustToContents();
         wb.SaveAs(filePath);
         return filePath;
@@ -818,6 +820,8 @@ public class ExcelService : IExcelService
         ws.Cell(r, 10).Style.Font.Bold = true;
 
         ws.SheetView.FreezeRows(3);
+        ws.Column(9).Style.NumberFormat.Format = IndianRupeeFormat;
+        ws.Column(10).Style.NumberFormat.Format = IndianRupeeFormat;
         ws.Columns().AdjustToContents();
         wb.SaveAs(filePath);
         return Task.FromResult(filePath);
@@ -850,6 +854,9 @@ public class ExcelService : IExcelService
         for (int i = 0; i < values.Length; i++)
             ws.Cell(row, i + 1).Value = XLCellValue.FromObject(values[i]);
     }
+
+    /// <summary>Excel number format that renders monetary cells with the Indian Rupee symbol.</summary>
+    private const string IndianRupeeFormat = "\"₹\"#,##0.00";
 
     private static string GetString(IXLWorksheet ws, int row, int col)
     {
