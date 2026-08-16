@@ -200,25 +200,21 @@ public class ExcelService : IExcelService
             validRows.Add(row);
         }
 
-        result.ImportedRows = validRows.Count;
-
-        if (errors.Count > 0)
-        {
-            result.Errors = errors;
-            return result;
-        }
-
-        // Resolve masters and detect duplicates against the database before creating anything.
-        var databaseErrors = await ValidateAgainstDatabaseAsync(validRows, seenSerials, ct);
+        // Resolve masters and detect duplicates against the database. Rows that
+        // fail validation are reported but no longer block the rest of the file.
+        var databaseErrors = await ValidateAgainstDatabaseAsync(validRows, ct);
         if (databaseErrors.Count > 0)
         {
-            result.Errors = databaseErrors;
-            return result;
+            var failedRows = new HashSet<int>(databaseErrors.Select(e => e.Row));
+            validRows.RemoveAll(r => failedRows.Contains(r.SheetRow));
+            errors.AddRange(databaseErrors);
         }
 
-        var created = await CreateInwardEntriesAsync(validRows, ct);
-        result.CreatedEntries = created;
-        result.Errors = Array.Empty<ImportRowError>();
+        if (validRows.Count > 0)
+            result.CreatedEntries = await CreateInwardEntriesAsync(validRows, ct);
+
+        result.ImportedRows = validRows.Count;
+        result.Errors = errors;
 
         return result;
     }
@@ -337,9 +333,10 @@ public class ExcelService : IExcelService
         return result;
     }
 
-    private async Task<List<ImportRowError>> ValidateAgainstDatabaseAsync(List<ImportRow> rows, HashSet<string> seenSerials, CancellationToken ct)
+    private async Task<List<ImportRowError>> ValidateAgainstDatabaseAsync(List<ImportRow> rows, CancellationToken ct)
     {
         var errors = new List<ImportRowError>();
+        var failedRows = new HashSet<int>();
 
         // Serial existence check (all at once, grouped to avoid N+1 where possible)
         foreach (var serialGroup in rows.Where(r => !string.IsNullOrWhiteSpace(r.SerialNumber))
@@ -347,17 +344,18 @@ public class ExcelService : IExcelService
         {
             if (await _uow.SerialNumbers.SerialExistsAsync(serialGroup.Key, ct))
             {
-                var row = serialGroup.First();
-                errors.Add(new ImportRowError
+                foreach (var row in serialGroup)
                 {
-                    Row = row.SheetRow,
-                    Message = $"Serial number '{serialGroup.Key}' already exists in the system.",
-                    Value = serialGroup.Key
-                });
+                    failedRows.Add(row.SheetRow);
+                    errors.Add(new ImportRowError
+                    {
+                        Row = row.SheetRow,
+                        Message = $"Serial number '{serialGroup.Key}' already exists in the system.",
+                        Value = serialGroup.Key
+                    });
+                }
             }
         }
-
-        if (errors.Count > 0) return errors;
 
         // Resolve party (customer or vendor), item and purpose references
         var customerCache = new Dictionary<string, Customer?>(StringComparer.OrdinalIgnoreCase);
@@ -367,6 +365,9 @@ public class ExcelService : IExcelService
 
         foreach (var row in rows)
         {
+            if (failedRows.Contains(row.SheetRow))
+                continue;
+
             if (!string.IsNullOrWhiteSpace(row.Party))
             {
                 // Items Received From is matched against customers first, then vendors.

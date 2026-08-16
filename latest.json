@@ -1,5 +1,5 @@
 {
-  "version": "1.0.8",
-  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.8/InwardDC.exe",
-  "notes": "Amounts are now displayed with the Indian Rupee symbol (₹) throughout the app — dashboard, lists, reports, PDFs and Excel exports. Previously amounts were shown as plain numbers (or the system currency, which could appear as $). Also includes v1.0.7: per-user module access restrictions (enable/disable which modules a user can open)."
+  "version": "1.0.9",
+  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.9/InwardDC.exe",
+  "notes": "Inward Excel import is now resilient: instead of rejecting the entire file when any row has a problem, it imports all valid rows and reports the skipped ones (duplicate serials, invalid dates, missing party/item, unknown parties/items/purposes). Previously one bad row meant nothing was imported."
 }
