@@ -197,13 +197,30 @@ public partial class InwardListViewModel : ViewModelBase
         var path = _dialogs.PickOpenFile("Excel Workbook|*.xlsx");
         if (path is null) return;
 
-        await RunAsync(async () =>
+        var progress = new Progress<string>(m => StatusMessage = m);
+        IsBusy = true;
+        StatusMessage = "Importing...";
+        HasError = false;
+        ErrorMessage = string.Empty;
+        try
         {
             await using var stream = File.OpenRead(path);
-            var result = await _excel.ImportInwardAsync(stream, Path.GetFileName(path));
+            var result = await _excel.ImportInwardAsync(stream, Path.GetFileName(path), progress: progress);
             _dialogs.ShowInfo(result.Summary, "Import Result");
             await RefreshAsync();
-        }, "Importing...");
+        }
+        catch (Exception ex)
+        {
+            var message = FriendlyMessage(ex);
+            _dialogs.ShowError($"Import failed: {message}", "Import Error");
+            HasError = true;
+            ErrorMessage = message;
+        }
+        finally
+        {
+            IsBusy = false;
+            StatusMessage = HasError ? ErrorMessage : "Ready";
+        }
     }
 
     [RelayCommand]

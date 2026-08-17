@@ -114,7 +114,7 @@ public class ExcelService : IExcelService
         return Task.FromResult<Stream>(stream);
     }
 
-    public async Task<FileImportResult> ImportInwardAsync(Stream stream, string fileName, CancellationToken ct = default)
+    public async Task<FileImportResult> ImportInwardAsync(Stream stream, string fileName, CancellationToken ct = default, IProgress<string>? progress = null)
     {
         var result = new FileImportResult();
         var errors = new List<ImportRowError>();
@@ -130,6 +130,10 @@ public class ExcelService : IExcelService
         for (int r = 2; r <= lastRow; r++)
         {
             ct.ThrowIfCancellationRequested();
+
+            if (progress is not null && r % 5000 == 0)
+                progress.Report($"Reading rows... {r - 1:N0}/{lastRow - 1:N0}");
+
             result.TotalRows++;
 
             var empty = Enumerable.Range(1, 11).All(c => string.IsNullOrWhiteSpace(GetString(ws, r, c)));
@@ -200,8 +204,7 @@ public class ExcelService : IExcelService
             validRows.Add(row);
         }
 
-        // Resolve masters and detect duplicates against the database. Rows that
-        // fail validation are reported but no longer block the rest of the file.
+        progress?.Report($"Validating {validRows.Count:N0} rows against the database...");
         var databaseErrors = await ValidateAgainstDatabaseAsync(validRows, ct);
         if (databaseErrors.Count > 0)
         {
@@ -211,7 +214,7 @@ public class ExcelService : IExcelService
         }
 
         if (validRows.Count > 0)
-            result.CreatedEntries = await CreateInwardEntriesAsync(validRows, ct);
+            result.CreatedEntries = await CreateInwardEntriesAsync(validRows, ct, progress);
 
         result.ImportedRows = validRows.Count;
         result.Errors = errors;
@@ -219,7 +222,7 @@ public class ExcelService : IExcelService
         return result;
     }
 
-    public async Task<FileImportResult> ImportDispatchesAsync(Stream stream, string fileName, CancellationToken ct = default)
+    public async Task<FileImportResult> ImportDispatchesAsync(Stream stream, string fileName, CancellationToken ct = default, IProgress<string>? progress = null)
     {
         var result = new FileImportResult();
         var errors = new List<ImportRowError>();
@@ -235,6 +238,10 @@ public class ExcelService : IExcelService
         for (int r = 2; r <= lastRow; r++)
         {
             ct.ThrowIfCancellationRequested();
+
+            if (progress is not null && r % 5000 == 0)
+                progress.Report($"Reading rows... {r - 1:N0}/{lastRow - 1:N0}");
+
             result.TotalRows++;
 
             var empty = Enumerable.Range(1, 12).All(c => string.IsNullOrWhiteSpace(GetString(ws, r, c)));
@@ -311,24 +318,21 @@ public class ExcelService : IExcelService
             validRows.Add(row);
         }
 
-        result.ImportedRows = validRows.Count;
-
-        if (errors.Count > 0)
-        {
-            result.Errors = errors;
-            return result;
-        }
-
+        // Rows that fail validation are reported but no longer block the rest of the file.
+        progress?.Report($"Validating {validRows.Count:N0} rows against the database...");
         var databaseErrors = await ValidateDispatchRowsAsync(validRows, ct);
         if (databaseErrors.Count > 0)
         {
-            result.Errors = databaseErrors;
-            return result;
+            var failedRows = new HashSet<int>(databaseErrors.Select(e => e.Row));
+            validRows.RemoveAll(r => failedRows.Contains(r.SheetRow));
+            errors.AddRange(databaseErrors);
         }
 
-        var created = await CreateDispatchEntriesAsync(validRows, ct);
-        result.CreatedEntries = created;
-        result.Errors = Array.Empty<ImportRowError>();
+        if (validRows.Count > 0)
+            result.CreatedEntries = await CreateDispatchEntriesAsync(validRows, ct, progress);
+
+        result.ImportedRows = validRows.Count;
+        result.Errors = errors;
 
         return result;
     }
@@ -338,11 +342,18 @@ public class ExcelService : IExcelService
         var errors = new List<ImportRowError>();
         var failedRows = new HashSet<int>();
 
-        // Serial existence check (all at once, grouped to avoid N+1 where possible)
+        // Serial existence check in a single batched query (avoids one query per serial).
+        var serialNos = rows.Where(r => !string.IsNullOrWhiteSpace(r.SerialNumber))
+            .Select(r => r.SerialNumber!.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var existingSerials = new HashSet<string>(
+            await _uow.SerialNumbers.GetExistingSerialsAsync(serialNos, ct),
+            StringComparer.OrdinalIgnoreCase);
+
         foreach (var serialGroup in rows.Where(r => !string.IsNullOrWhiteSpace(r.SerialNumber))
                      .GroupBy(r => r.SerialNumber!.Trim()))
         {
-            if (await _uow.SerialNumbers.SerialExistsAsync(serialGroup.Key, ct))
+            if (existingSerials.Contains(serialGroup.Key))
             {
                 foreach (var row in serialGroup)
                 {
@@ -408,18 +419,17 @@ public class ExcelService : IExcelService
                     errors.Add(new ImportRowError { Row = row.SheetRow, Message = $"Purpose '{row.PurposeName}' not found in master.", Value = row.PurposeName });
                 }
             }
-
-            if (errors.Count >= 50)
-                break;
         }
 
         return errors;
     }
 
-    private async Task<int> CreateInwardEntriesAsync(List<ImportRow> rows, CancellationToken ct)
+    private async Task<int> CreateInwardEntriesAsync(List<ImportRow> rows, CancellationToken ct, IProgress<string>? progress = null)
     {
         var grouped = rows.GroupBy(r => new InwardGroupKey(r.InwardDate.Date, r.InwardType, r.CustomerEntity?.Id, r.VendorEntity?.Id, r.PurposeEntity?.Id, r.InvoiceNo, r.ChallanNo));
         var created = 0;
+        var processed = 0;
+        var sinceSave = 0;
 
         var settings = await _uow.Settings.GetValueAsync("Numbering.InwardPrefix", ct) ?? "INW";
         var year = DateTime.Today.Year;
@@ -487,6 +497,16 @@ public class ExcelService : IExcelService
                     EventedBy = _currentUser.UserId,
                     EventedOn = DateTime.UtcNow
                 }, ct);
+
+                processed++;
+                if (progress is not null && processed % 5000 == 0)
+                    progress.Report($"Creating entries... {processed:N0}/{rows.Count:N0}");
+
+                if (++sinceSave >= 800)
+                {
+                    await _uow.SaveChangesAsync(ct);
+                    sinceSave = 0;
+                }
             }
 
             entry.TotalQuantity = entry.Items.Sum(i => i.Quantity);
@@ -501,6 +521,13 @@ public class ExcelService : IExcelService
     private async Task<List<ImportRowError>> ValidateDispatchRowsAsync(List<DispatchImportRow> rows, CancellationToken ct)
     {
         var errors = new List<ImportRowError>();
+        var failedRows = new HashSet<int>();
+
+        // Batch the serial lookup into a few queries instead of one per row.
+        var serialNos = rows.Where(r => !string.IsNullOrWhiteSpace(r.SerialNumber))
+            .Select(r => r.SerialNumber!.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var existingSerials = await _uow.SerialNumbers.GetSerialsByNosAsync(serialNos, ct);
 
         var customerCache = new Dictionary<string, Customer?>(StringComparer.OrdinalIgnoreCase);
         var vendorCache = new Dictionary<string, Vendor?>(StringComparer.OrdinalIgnoreCase);
@@ -509,6 +536,9 @@ public class ExcelService : IExcelService
 
         foreach (var row in rows)
         {
+            if (failedRows.Contains(row.SheetRow))
+                continue;
+
             if (!string.IsNullOrWhiteSpace(row.Party))
             {
                 // Items Sent To is matched against customers first, then vendors.
@@ -518,10 +548,12 @@ public class ExcelService : IExcelService
 
                 if (row.CustomerEntity is null && row.VendorEntity is null)
                 {
+                    failedRows.Add(row.SheetRow);
                     errors.Add(new ImportRowError { Row = row.SheetRow, Message = $"Items Sent To '{row.Party}' not found in customer or vendor master.", Value = row.Party });
                 }
                 else if (row.CustomerEntity is null)
                 {
+                    failedRows.Add(row.SheetRow);
                     errors.Add(new ImportRowError { Row = row.SheetRow, Message = $"Items Sent To '{row.Party}' is a vendor; dispatches must go to a customer.", Value = row.Party });
                 }
             }
@@ -531,6 +563,7 @@ public class ExcelService : IExcelService
                 row.ItemEntity = await ResolveItemAsync(null, row.ItemName, itemCache, ct);
                 if (row.ItemEntity is null && !string.IsNullOrWhiteSpace(row.SerialNumber))
                 {
+                    failedRows.Add(row.SheetRow);
                     errors.Add(new ImportRowError
                     {
                         Row = row.SheetRow,
@@ -545,28 +578,30 @@ public class ExcelService : IExcelService
                 row.PurposeEntity = await ResolvePurposeAsync(row.PurposeName, purposeCache, ct);
                 if (row.PurposeEntity is null)
                 {
+                    failedRows.Add(row.SheetRow);
                     errors.Add(new ImportRowError { Row = row.SheetRow, Message = $"Purpose '{row.PurposeName}' not found in master.", Value = row.PurposeName });
                 }
             }
 
             if (!string.IsNullOrWhiteSpace(row.SerialNumber))
             {
-                var existing = await _uow.SerialNumbers.GetBySerialAsync(row.SerialNumber.Trim(), ct);
-                if (existing is not null && existing.Status == SerialStatus.Dispatched)
+                var serialKey = row.SerialNumber.Trim();
+                if (existingSerials.TryGetValue(serialKey, out var existing))
                 {
-                    errors.Add(new ImportRowError { Row = row.SheetRow, Message = $"Serial '{row.SerialNumber.Trim()}' is already dispatched.", Value = row.SerialNumber });
+                    row.ExistingSerial = existing;
+                    if (existing.Status == SerialStatus.Dispatched)
+                    {
+                        failedRows.Add(row.SheetRow);
+                        errors.Add(new ImportRowError { Row = row.SheetRow, Message = $"Serial '{serialKey}' is already dispatched.", Value = row.SerialNumber });
+                    }
                 }
-                row.ExistingSerial = existing;
             }
-
-            if (errors.Count >= 50)
-                break;
         }
 
         return errors;
     }
 
-    private async Task<int> CreateDispatchEntriesAsync(List<DispatchImportRow> rows, CancellationToken ct)
+    private async Task<int> CreateDispatchEntriesAsync(List<DispatchImportRow> rows, CancellationToken ct, IProgress<string>? progress = null)
     {
         var grouped = rows.GroupBy(r => new DispatchGroupKey(
             r.DcDate.Date, r.DcNo!.Trim(), r.CustomerEntity!.Id, r.InvoiceNo, r.PurposeEntity?.Id,
@@ -574,6 +609,8 @@ public class ExcelService : IExcelService
 
         var affectedInwardIds = new HashSet<Guid>();
         var created = 0;
+        var processed = 0;
+        var sinceSave = 0;
 
         foreach (var group in grouped)
         {
@@ -661,6 +698,16 @@ public class ExcelService : IExcelService
                     EventedBy = _currentUser.UserId,
                     EventedOn = DateTime.UtcNow
                 }, ct);
+
+                processed++;
+                if (progress is not null && processed % 5000 == 0)
+                    progress.Report($"Creating entries... {processed:N0}/{rows.Count:N0}");
+
+                if (++sinceSave >= 800)
+                {
+                    await _uow.SaveChangesAsync(ct);
+                    sinceSave = 0;
+                }
             }
 
             dc.TotalQuantity = dc.Items.Sum(i => i.Quantity);

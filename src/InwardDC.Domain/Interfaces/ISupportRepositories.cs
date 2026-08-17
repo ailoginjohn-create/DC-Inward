@@ -61,6 +61,8 @@ public interface ISerialNumberRepository
     Task<IReadOnlyList<SerialNumber>> GetAllWithDetailsAsync(Guid? itemId = null, string? search = null, CancellationToken ct = default);
     Task<int> CountInStockAsync(CancellationToken ct = default);
     Task<bool> SerialExistsAsync(string serialNo, CancellationToken ct = default);
+    Task<IReadOnlyList<string>> GetExistingSerialsAsync(IReadOnlyCollection<string> serialNos, CancellationToken ct = default);
+    Task<Dictionary<string, SerialNumber>> GetSerialsByNosAsync(IReadOnlyCollection<string> serialNos, CancellationToken ct = default);
     Task AddAsync(SerialNumber serial, CancellationToken ct = default);
     void Update(SerialNumber serial);
 }

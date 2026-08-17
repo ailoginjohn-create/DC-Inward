@@ -319,7 +319,7 @@ public class ExcelImportTests
     }
 
     [Fact]
-    public async Task ImportDispatchesAsync_RejectsDuplicateSerialWithinFile()
+    public async Task ImportDispatchesAsync_SkipsDuplicateSerialWithinFile_AndImportsTheRest()
     {
         var (app, customerCode) = await SeedMastersAsync();
         using (app)
@@ -332,8 +332,39 @@ public class ExcelImportTests
 
             var result = await service.ImportDispatchesAsync(stream, "import.xlsx");
 
-            Assert.False(result.Success);
+            Assert.Equal(1, result.CreatedEntries);
+            Assert.Equal(1, result.DuplicatesSkipped);
             Assert.Contains(result.Errors, e => e.Message.Contains("Duplicate serial 'DUP-1'"));
+
+            var dcs = await app.Uow.DCs.GetByPeriodDetailedAsync(new DateTime(2026, 1, 1), new DateTime(2026, 1, 3));
+            var dc = Assert.Single(dcs);
+            Assert.Single(dc.Items);
+        }
+    }
+
+    [Fact]
+    public async Task ImportDispatchesAsync_ImportsValidRows_WhenOtherRowsFail()
+    {
+        var (app, customerCode) = await SeedMastersAsync();
+        using (app)
+        {
+            var service = CreateService(app);
+            using var stream = BuildDispatchWorkbook(
+                new object[] { "01/01/2026", "DC-1", "INV-1", customerCode, "Monitor", 1, "OK-1", "Evaluation", "", "", "", "" },
+                new object[] { "01/01/2026", "DC-2", "INV-2", "Nobody Here", "Monitor", 1, "", "Evaluation", "", "", "", "" },
+                new object[] { "01/01/2026", "DC-3", "INV-3", customerCode, "Monitor", 1, "OK-1", "Evaluation", "", "", "", "" }
+            );
+
+            var result = await service.ImportDispatchesAsync(stream, "import.xlsx");
+
+            Assert.Equal(1, result.ImportedRows);
+            Assert.Equal(1, result.CreatedEntries);
+            Assert.Equal(1, result.DuplicatesSkipped);
+            Assert.Equal(2, result.Errors.Count);
+
+            var dcs = await app.Uow.DCs.GetByPeriodDetailedAsync(new DateTime(2026, 1, 1), new DateTime(2026, 1, 2));
+            var dc = Assert.Single(dcs);
+            Assert.Single(dc.Items);
         }
     }
 

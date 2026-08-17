@@ -266,6 +266,42 @@ public class SerialNumberRepository : ISerialNumberRepository
     public Task<bool> SerialExistsAsync(string serialNo, CancellationToken ct = default)
         => _db.SerialNumbers.AsNoTracking().AnyAsync(x => x.SerialNo == serialNo && !x.IsDeleted, ct);
 
+    public async Task<IReadOnlyList<string>> GetExistingSerialsAsync(IReadOnlyCollection<string> serialNos, CancellationToken ct = default)
+    {
+        var keys = serialNos.Select(s => s.Trim()).Where(s => s.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        if (keys.Count == 0) return Array.Empty<string>();
+
+        var found = new List<string>();
+        foreach (var chunk in keys.Chunk(400))
+        {
+            var chunkSet = chunk.ToList();
+            var matches = await _db.SerialNumbers.AsNoTracking()
+                .Where(x => chunkSet.Contains(x.SerialNo) && !x.IsDeleted)
+                .Select(x => x.SerialNo)
+                .ToListAsync(ct);
+            found.AddRange(matches);
+        }
+        return found;
+    }
+
+    public async Task<Dictionary<string, SerialNumber>> GetSerialsByNosAsync(IReadOnlyCollection<string> serialNos, CancellationToken ct = default)
+    {
+        var keys = serialNos.Select(s => s.Trim()).Where(s => s.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var result = new Dictionary<string, SerialNumber>(StringComparer.OrdinalIgnoreCase);
+        if (keys.Count == 0) return result;
+
+        foreach (var chunk in keys.Chunk(400))
+        {
+            var chunkSet = chunk.ToList();
+            var matches = await _db.SerialNumbers.AsNoTracking()
+                .Where(x => chunkSet.Contains(x.SerialNo) && !x.IsDeleted)
+                .ToListAsync(ct);
+            foreach (var match in matches)
+                result[match.SerialNo] = match;
+        }
+        return result;
+    }
+
     public Task AddAsync(SerialNumber serial, CancellationToken ct = default)
         => _db.SerialNumbers.AddAsync(serial, ct).AsTask();
 

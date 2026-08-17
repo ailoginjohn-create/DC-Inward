@@ -1,5 +1,5 @@
 {
-  "version": "1.0.9",
-  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.9/InwardDC.exe",
-  "notes": "Inward Excel import is now resilient: instead of rejecting the entire file when any row has a problem, it imports all valid rows and reports the skipped ones (duplicate serials, invalid dates, missing party/item, unknown parties/items/purposes). Previously one bad row meant nothing was imported."
+  "version": "1.0.10",
+  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.10/InwardDC.exe",
+  "notes": "Import performance and reliability fixes. Inward and DC imports are now much faster on large files (batched serial checks, chunked saves), show live progress while importing, and pop up an error dialog instead of silently failing. Both imports also accept a file with some bad rows and import the valid ones, reporting the skipped rows."
 }
