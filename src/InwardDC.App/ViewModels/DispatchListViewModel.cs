@@ -187,6 +187,11 @@ public partial class DispatchListViewModel : ViewModelBase
             await using var stream = File.OpenRead(path);
             var result = await _excel.ImportDispatchesAsync(stream, Path.GetFileName(path), progress: progress);
             _dialogs.ShowInfo(result.Summary, "Import Result");
+            SearchText = string.Empty;
+            FromDate = null;
+            ToDate = null;
+            Status = null;
+            Page = 1;
             await RefreshAsync();
         }
         catch (Exception ex)

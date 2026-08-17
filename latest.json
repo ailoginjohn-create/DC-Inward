@@ -1,5 +1,5 @@
 {
-  "version": "1.0.10",
-  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.10/InwardDC.exe",
-  "notes": "Import performance and reliability fixes. Inward and DC imports are now much faster on large files (batched serial checks, chunked saves), show live progress while importing, and pop up an error dialog instead of silently failing. Both imports also accept a file with some bad rows and import the valid ones, reporting the skipped rows."
+  "version": "1.0.11",
+  "url": "https://github.com/ailoginjohn-create/DC-Inward/releases/download/v1.0.11/InwardDC.exe",
+  "notes": "After a successful import, the list filters are cleared automatically so the newly imported entries are shown immediately (previously a date/search/status filter could hide them, making it look like nothing was imported)."
 }
